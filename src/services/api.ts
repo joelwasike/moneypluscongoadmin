@@ -5,7 +5,9 @@ function normalizeBaseUrl(raw: string): string {
   return url;
 }
 
-const BASE_URL = normalizeBaseUrl('http://localhost:8080/api/v1/admin');
+// Keep in sync with Flutter app default API base:
+// lib/services/api_service.dart -> https://moneyplusapi.theliberec.com/api/v1
+const BASE_URL = normalizeBaseUrl('https://moneyplusapi.theliberec.com/api/v1/admin');
 
 function getToken(): string | null {
   return localStorage.getItem('moneyplus_token');
