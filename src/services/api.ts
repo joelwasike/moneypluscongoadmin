@@ -1,4 +1,11 @@
-const BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api/v1/admin';
+function normalizeBaseUrl(raw: string): string {
+  let url = raw.trim();
+  url = url.replace(/\/+$/, '');
+  url = url.replace(/\/dashboard$/, '');
+  return url;
+}
+
+const BASE_URL = normalizeBaseUrl('http://localhost:8080/api/v1/admin');
 
 function getToken(): string | null {
   return localStorage.getItem('moneyplus_token');
