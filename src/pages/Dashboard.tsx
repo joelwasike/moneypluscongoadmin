@@ -1,27 +1,14 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Users, Activity, DollarSign, TrendingUp } from 'lucide-react';
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  BarChart,
-  Bar,
-} from 'recharts';
-import { dashboardStats, transactions } from '../data/mockData';
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import api from '../services/api';
 
 const NAVY = '#1B3A5C';
 const GREEN = '#43A047';
 const BG = '#F5F7FA';
 const FONT = 'Inter, sans-serif';
 
-const PIE_COLORS = [GREEN, NAVY, '#66BB6A', '#7C8D9E'];
+const PIE_COLORS = [GREEN, NAVY, '#66BB6A', '#7C8D9E', '#AAB8C6', '#FF9800'];
 
 const statusColors: Record<string, { bg: string; text: string }> = {
   completed: { bg: '#E8F5E9', text: GREEN },
@@ -30,41 +17,23 @@ const statusColors: Record<string, { bg: string; text: string }> = {
   cancelled: { bg: '#F5F5F5', text: '#9E9E9E' },
 };
 
-const formatCurrency = (value: number): string => {
-  return value.toLocaleString('fr-CD');
-};
+const formatCurrency = (value: number): string => value.toLocaleString('fr-CD');
 
-interface StatCardProps {
-  title: string;
-  value: string;
-  icon: React.ReactNode;
-  growth?: string;
-}
-
-const StatCard: React.FC<StatCardProps> = ({ title, value, icon, growth }) => {
-  const [hovered, setHovered] = useState(false);
-
+const StatCard: React.FC<{ title: string; value: string; icon: React.ReactNode }> = ({ title, value, icon }) => {
   return (
     <div
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
       style={{
         background: '#FFFFFF',
         borderRadius: 16,
         padding: 24,
-        boxShadow: hovered
-          ? '0 8px 24px rgba(27,58,92,0.15)'
-          : '0 2px 8px rgba(27,58,92,0.08)',
-        transform: hovered ? 'scale(1.03)' : 'scale(1)',
-        transition: 'all 0.2s ease',
+        boxShadow: '0 2px 8px rgba(27,58,92,0.08)',
         fontFamily: FONT,
-        cursor: 'default',
       }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
           <p style={{ margin: 0, fontSize: 13, color: '#7C8D9E', fontWeight: 500 }}>{title}</p>
-          <h2 style={{ margin: '8px 0 0', fontSize: 28, fontWeight: 700, color: NAVY }}>{value}</h2>
+          <h2 style={{ margin: '8px 0 0', fontSize: 28, fontWeight: 800, color: NAVY }}>{value}</h2>
         </div>
         <div
           style={{
@@ -80,118 +49,105 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon, growth }) => {
           {icon}
         </div>
       </div>
-      {growth && (
-        <div
-          style={{
-            marginTop: 12,
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 4,
-            background: '#E8F5E9',
-            color: GREEN,
-            fontSize: 12,
-            fontWeight: 600,
-            padding: '4px 10px',
-            borderRadius: 20,
-          }}
-        >
-          <TrendingUp size={14} />
-          {growth}
-        </div>
-      )}
     </div>
   );
 };
 
-const CardWrapper: React.FC<{ children: React.ReactNode; style?: React.CSSProperties }> = ({
-  children,
-  style,
-}) => {
-  const [hovered, setHovered] = useState(false);
+const Card: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
+  <div
+    style={{
+      background: '#FFFFFF',
+      borderRadius: 16,
+      padding: 24,
+      boxShadow: '0 2px 8px rgba(27,58,92,0.08)',
+      fontFamily: FONT,
+    }}
+  >
+    <h3 style={{ margin: '0 0 18px', fontSize: 16, fontWeight: 700, color: NAVY }}>{title}</h3>
+    {children}
+  </div>
+);
 
-  return (
-    <div
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        background: '#FFFFFF',
-        borderRadius: 16,
-        padding: 24,
-        boxShadow: hovered
-          ? '0 8px 24px rgba(27,58,92,0.15)'
-          : '0 2px 8px rgba(27,58,92,0.08)',
-        transform: hovered ? 'scale(1.01)' : 'scale(1)',
-        transition: 'all 0.2s ease',
-        fontFamily: FONT,
-        ...style,
-      }}
-    >
-      {children}
-    </div>
-  );
-};
+export default function Dashboard() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [data, setData] = useState<any>(null);
 
-const Dashboard: React.FC = () => {
-  const recentTransactions = transactions.slice(0, 5);
+  const load = async () => {
+    setLoading(true);
+    setError(null);
+    const res = await api.dashboard();
+    setLoading(false);
+    if (!res?.success) {
+      setError(res?.message || 'Failed to load dashboard');
+      setData(null);
+      return;
+    }
+    setData(res.data);
+  };
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  const daily = useMemo(() => (data?.daily || []).map((d: any) => ({
+    date: d.date,
+    volume: Number(d.volume) || 0,
+    count: Number(d.count) || 0,
+  })), [data]);
+
+  const byType = useMemo(() => (data?.by_type || []).map((t: any) => ({
+    name: t.type,
+    value: Number(t.count) || 0,
+  })), [data]);
+
+  const topCountries = useMemo(() => (data?.top_countries || []).map((c: any) => ({
+    country: c.country,
+    users: Number(c.count) || 0,
+  })), [data]);
+
+  const recentTx = useMemo(() => (data?.recent_transactions || []) as any[], [data]);
 
   return (
     <div style={{ background: BG, minHeight: '100vh', padding: 32, fontFamily: FONT }}>
-      {/* Page Header */}
-      <div style={{ marginBottom: 32 }}>
-        <h1 style={{ margin: 0, fontSize: 28, fontWeight: 700, color: NAVY }}>Dashboard</h1>
-        <p style={{ margin: '4px 0 0', fontSize: 14, color: '#7C8D9E' }}>
-          Overview of Money+ Congo
-        </p>
+      <div style={{ marginBottom: 28, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16 }}>
+        <div>
+          <h1 style={{ margin: 0, fontSize: 28, fontWeight: 800, color: NAVY }}>Dashboard</h1>
+          <p style={{ margin: '4px 0 0', fontSize: 14, color: '#7C8D9E' }}>Overview of Money+ Congo</p>
+        </div>
+        <button
+          onClick={load}
+          style={{
+            padding: '10px 16px',
+            borderRadius: 10,
+            border: '1px solid #E5E7EB',
+            background: '#fff',
+            cursor: 'pointer',
+            fontWeight: 700,
+            color: NAVY,
+          }}
+        >
+          Refresh
+        </button>
       </div>
 
-      {/* Stat Cards Row */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
-          gap: 24,
-          marginBottom: 32,
-        }}
-      >
-        <StatCard
-          title="Total Users"
-          value={dashboardStats.totalUsers.toString()}
-          icon={<Users size={24} color={NAVY} />}
-          growth={`+${dashboardStats.monthlyGrowth}%`}
-        />
-        <StatCard
-          title="Total Transactions"
-          value={dashboardStats.totalTransactions.toString()}
-          icon={<Activity size={24} color={NAVY} />}
-        />
-        <StatCard
-          title="Transaction Volume"
-          value={`${formatCurrency(dashboardStats.totalVolume)} CDF`}
-          icon={<DollarSign size={24} color={NAVY} />}
-        />
-        <StatCard
-          title="Revenue from Fees"
-          value={`${formatCurrency(dashboardStats.totalFees)} CDF`}
-          icon={<TrendingUp size={24} color={NAVY} />}
-        />
+      {(loading || error) && (
+        <div style={{ marginBottom: 16, color: error ? '#C62828' : '#6B7280', fontWeight: 700 }}>
+          {error ? error : 'Loading…'}
+        </div>
+      )}
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 24, marginBottom: 28 }}>
+        <StatCard title="Total Users" value={String(data?.total_users ?? '—')} icon={<Users size={24} color={NAVY} />} />
+        <StatCard title="Total Transactions" value={String(data?.total_transactions ?? '—')} icon={<Activity size={24} color={NAVY} />} />
+        <StatCard title="Transaction Volume" value={`${formatCurrency(Number(data?.total_volume || 0))} CDF`} icon={<DollarSign size={24} color={NAVY} />} />
+        <StatCard title="Revenue (Fees)" value={`${formatCurrency(Number(data?.total_fees || 0))} CDF`} icon={<TrendingUp size={24} color={NAVY} />} />
       </div>
 
-      {/* Charts Row */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: 24,
-          marginBottom: 32,
-        }}
-      >
-        {/* Area Chart - Transaction Volume */}
-        <CardWrapper>
-          <h3 style={{ margin: '0 0 20px', fontSize: 16, fontWeight: 600, color: NAVY }}>
-            Transaction Volume
-          </h3>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 28 }}>
+        <Card title="Daily Volume (Last 7 days)">
           <ResponsiveContainer width="100%" height={280}>
-            <AreaChart data={dashboardStats.dailyTransactions}>
+            <AreaChart data={daily}>
               <defs>
                 <linearGradient id="volumeGradient" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor={GREEN} stopOpacity={0.3} />
@@ -199,328 +155,87 @@ const Dashboard: React.FC = () => {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#E0E6ED" />
-              <XAxis
-                dataKey="date"
-                tick={{ fontSize: 12, fill: '#7C8D9E', fontFamily: FONT }}
-                axisLine={{ stroke: '#E0E6ED' }}
-                tickLine={false}
-              />
-              <YAxis
-                tick={{ fontSize: 12, fill: '#7C8D9E', fontFamily: FONT }}
-                axisLine={false}
-                tickLine={false}
-                tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
-              />
-              <Tooltip
-                contentStyle={{
-                  borderRadius: 10,
-                  border: 'none',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                  fontFamily: FONT,
-                  fontSize: 13,
-                }}
-                formatter={(value: any) => [`${formatCurrency(Number(value))} CDF`, 'Volume']}
-              />
-              <Area
-                type="monotone"
-                dataKey="volume"
-                stroke={GREEN}
-                strokeWidth={2.5}
-                fill="url(#volumeGradient)"
-              />
+              <XAxis dataKey="date" tick={{ fontSize: 12, fill: '#7C8D9E', fontFamily: FONT }} />
+              <YAxis tick={{ fontSize: 12, fill: '#7C8D9E', fontFamily: FONT }} tickFormatter={(v) => `${(Number(v) / 1000).toFixed(0)}k`} />
+              <Tooltip />
+              <Area type="monotone" dataKey="volume" stroke={GREEN} fill="url(#volumeGradient)" strokeWidth={2} />
             </AreaChart>
           </ResponsiveContainer>
-        </CardWrapper>
+        </Card>
 
-        {/* Pie Chart - Transactions by Method */}
-        <CardWrapper>
-          <h3 style={{ margin: '0 0 20px', fontSize: 16, fontWeight: 600, color: NAVY }}>
-            Transactions by Method
-          </h3>
+        <Card title="Transactions by Type">
           <ResponsiveContainer width="100%" height={280}>
             <PieChart>
-              <Pie
-                data={dashboardStats.transactionsByMethod}
-                cx="50%"
-                cy="50%"
-                innerRadius={70}
-                outerRadius={110}
-                paddingAngle={4}
-                dataKey="value"
-              >
-                {dashboardStats.transactionsByMethod.map((_, index) => (
+              <Pie data={byType} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={95} label>
+                {byType.map((_: any, index: number) => (
                   <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip
-                contentStyle={{
-                  borderRadius: 10,
-                  border: 'none',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                  fontFamily: FONT,
-                  fontSize: 13,
-                }}
-                formatter={(value: any, name: any) => [`${value}%`, name]}
-              />
+              <Tooltip />
             </PieChart>
           </ResponsiveContainer>
-          {/* Legend */}
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              gap: 20,
-              marginTop: 8,
-              flexWrap: 'wrap',
-            }}
-          >
-            {dashboardStats.transactionsByMethod.map((entry, index) => (
-              <div key={entry.name} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <div
-                  style={{
-                    width: 10,
-                    height: 10,
-                    borderRadius: '50%',
-                    background: PIE_COLORS[index],
-                  }}
-                />
-                <span style={{ fontSize: 12, color: '#7C8D9E' }}>{entry.name}</span>
-              </div>
-            ))}
-          </div>
-        </CardWrapper>
+        </Card>
       </div>
 
-      {/* Bottom Row */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: 24,
-          marginBottom: 32,
-        }}
-      >
-        {/* Bar Chart - Revenue Trend */}
-        <CardWrapper>
-          <h3 style={{ margin: '0 0 20px', fontSize: 16, fontWeight: 600, color: NAVY }}>
-            Revenue Trend
-          </h3>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+        <Card title="Top Countries (Users)">
           <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={dashboardStats.revenueByMonth}>
+            <BarChart data={topCountries}>
               <CartesianGrid strokeDasharray="3 3" stroke="#E0E6ED" />
-              <XAxis
-                dataKey="month"
-                tick={{ fontSize: 12, fill: '#7C8D9E', fontFamily: FONT }}
-                axisLine={{ stroke: '#E0E6ED' }}
-                tickLine={false}
-              />
-              <YAxis
-                tick={{ fontSize: 12, fill: '#7C8D9E', fontFamily: FONT }}
-                axisLine={false}
-                tickLine={false}
-                tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
-              />
-              <Tooltip
-                contentStyle={{
-                  borderRadius: 10,
-                  border: 'none',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                  fontFamily: FONT,
-                  fontSize: 13,
-                }}
-                formatter={(value: any) => [`${formatCurrency(Number(value))} CDF`, 'Revenue']}
-              />
-              <Bar dataKey="revenue" fill={NAVY} radius={[6, 6, 0, 0]} barSize={36} />
+              <XAxis dataKey="country" tick={{ fontSize: 12, fill: '#7C8D9E', fontFamily: FONT }} />
+              <YAxis tick={{ fontSize: 12, fill: '#7C8D9E', fontFamily: FONT }} />
+              <Tooltip />
+              <Bar dataKey="users" fill={NAVY} radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
-        </CardWrapper>
+        </Card>
 
-        {/* Top Countries by Volume */}
-        <CardWrapper>
-          <h3 style={{ margin: '0 0 20px', fontSize: 16, fontWeight: 600, color: NAVY }}>
-            Top Countries by Volume
-          </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-            {/* Table header */}
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '2fr 1fr 1fr',
-                padding: '10px 12px',
-                borderBottom: '2px solid #E0E6ED',
-              }}
-            >
-              <span style={{ fontSize: 12, fontWeight: 600, color: '#7C8D9E', textTransform: 'uppercase' }}>
-                Country
-              </span>
-              <span style={{ fontSize: 12, fontWeight: 600, color: '#7C8D9E', textTransform: 'uppercase', textAlign: 'right' }}>
-                Volume
-              </span>
-              <span style={{ fontSize: 12, fontWeight: 600, color: '#7C8D9E', textTransform: 'uppercase', textAlign: 'right' }}>
-                Txns
-              </span>
-            </div>
-            {dashboardStats.transactionsByCountry.map((entry) => (
-              <div
-                key={entry.country}
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '2fr 1fr 1fr',
-                  padding: '14px 12px',
-                  borderBottom: '1px solid #F0F2F5',
-                  alignItems: 'center',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{ fontSize: 22 }}>{entry.flag}</span>
-                  <span style={{ fontSize: 14, fontWeight: 500, color: NAVY }}>{entry.country}</span>
-                </div>
-                <span style={{ fontSize: 14, fontWeight: 600, color: NAVY, textAlign: 'right' }}>
-                  {formatCurrency(entry.volume)} CDF
-                </span>
-                <span style={{ fontSize: 14, color: '#7C8D9E', textAlign: 'right' }}>
-                  {entry.count}
-                </span>
-              </div>
-            ))}
-          </div>
-        </CardWrapper>
-      </div>
-
-      {/* Recent Transactions Table */}
-      <CardWrapper>
-        <h3 style={{ margin: '0 0 20px', fontSize: 16, fontWeight: 600, color: NAVY }}>
-          Recent Transactions
-        </h3>
-        <div style={{ overflowX: 'auto' }}>
-          <table
-            style={{
-              width: '100%',
-              borderCollapse: 'collapse',
-              fontFamily: FONT,
-            }}
-          >
-            <thead>
-              <tr>
-                {['ID', 'User', 'Type', 'Method', 'Amount', 'Status', 'Date'].map((header) => (
-                  <th
-                    key={header}
-                    style={{
-                      textAlign: 'left',
-                      padding: '12px 16px',
-                      fontSize: 12,
-                      fontWeight: 600,
-                      color: '#7C8D9E',
-                      textTransform: 'uppercase',
-                      borderBottom: '2px solid #E0E6ED',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    {header}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {recentTransactions.map((txn) => {
-                const statusStyle = statusColors[txn.status] || statusColors.cancelled;
-                return (
-                  <tr key={txn.id}>
-                    <td
-                      style={{
-                        padding: '14px 16px',
-                        fontSize: 13,
-                        fontWeight: 600,
-                        color: NAVY,
-                        borderBottom: '1px solid #F0F2F5',
-                      }}
-                    >
-                      {txn.id}
-                    </td>
-                    <td
-                      style={{
-                        padding: '14px 16px',
-                        fontSize: 13,
-                        color: NAVY,
-                        borderBottom: '1px solid #F0F2F5',
-                      }}
-                    >
-                      {txn.userName}
-                    </td>
-                    <td
-                      style={{
-                        padding: '14px 16px',
-                        fontSize: 13,
-                        color: '#7C8D9E',
-                        borderBottom: '1px solid #F0F2F5',
+        <Card title="Recent Transactions">
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
+              <thead>
+                <tr style={{ backgroundColor: '#F9FAFB', borderBottom: '1px solid #E5E7EB' }}>
+                  {['ID', 'Type', 'Amount', 'Currency', 'Status', 'Date'].map((h) => (
+                    <th key={h} style={{ padding: '10px 12px', textAlign: 'left', fontWeight: 700, color: '#6B7280', fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5, whiteSpace: 'nowrap' }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {recentTx.map((t: any) => (
+                  <tr key={t.id} style={{ borderBottom: '1px solid #F3F4F6' }}>
+                    <td style={{ padding: '10px 12px', fontWeight: 800, color: NAVY, whiteSpace: 'nowrap' }}>#{t.id}</td>
+                    <td style={{ padding: '10px 12px', color: '#374151', whiteSpace: 'nowrap' }}>{t.type}</td>
+                    <td style={{ padding: '10px 12px', fontWeight: 700, color: '#1F2937', whiteSpace: 'nowrap' }}>{Number(t.amount || 0).toLocaleString('fr-CD')}</td>
+                    <td style={{ padding: '10px 12px', color: '#6B7280', whiteSpace: 'nowrap' }}>{t.currency}</td>
+                    <td style={{ padding: '10px 12px' }}>
+                      <span style={{
+                        display: 'inline-block',
+                        padding: '4px 10px',
+                        borderRadius: 20,
+                        fontSize: 12,
+                        fontWeight: 800,
                         textTransform: 'capitalize',
-                      }}
-                    >
-                      {txn.type}
-                    </td>
-                    <td
-                      style={{
-                        padding: '14px 16px',
-                        fontSize: 13,
-                        color: '#7C8D9E',
-                        borderBottom: '1px solid #F0F2F5',
-                      }}
-                    >
-                      {txn.method.replace('_', ' ')}
-                    </td>
-                    <td
-                      style={{
-                        padding: '14px 16px',
-                        fontSize: 13,
-                        fontWeight: 600,
-                        color: NAVY,
-                        borderBottom: '1px solid #F0F2F5',
+                        backgroundColor: statusColors[t.status]?.bg || '#ECEFF1',
+                        color: statusColors[t.status]?.text || '#546E7A',
                         whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {formatCurrency(txn.amount)} {txn.currency}
-                    </td>
-                    <td
-                      style={{
-                        padding: '14px 16px',
-                        borderBottom: '1px solid #F0F2F5',
-                      }}
-                    >
-                      <span
-                        style={{
-                          display: 'inline-block',
-                          padding: '4px 12px',
-                          borderRadius: 20,
-                          fontSize: 12,
-                          fontWeight: 600,
-                          background: statusStyle.bg,
-                          color: statusStyle.text,
-                          textTransform: 'capitalize',
-                        }}
-                      >
-                        {txn.status}
+                      }}>
+                        {t.status}
                       </span>
                     </td>
-                    <td
-                      style={{
-                        padding: '14px 16px',
-                        fontSize: 13,
-                        color: '#7C8D9E',
-                        borderBottom: '1px solid #F0F2F5',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {txn.createdAt}
-                    </td>
+                    <td style={{ padding: '10px 12px', color: '#6B7280', whiteSpace: 'nowrap' }}>{String(t.created_at || '').slice(0, 16)}</td>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </CardWrapper>
+                ))}
+                {!loading && !error && recentTx.length === 0 && (
+                  <tr>
+                    <td colSpan={6} style={{ padding: 18, textAlign: 'center', color: '#9CA3AF' }}>No recent transactions.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      </div>
     </div>
   );
-};
+}
 
-export default Dashboard;

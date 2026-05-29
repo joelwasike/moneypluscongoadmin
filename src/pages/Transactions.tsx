@@ -1,77 +1,76 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Search, ArrowUpDown, CheckCircle, Clock, XCircle } from 'lucide-react';
-import { transactions, Transaction } from '../data/mockData';
+import api from '../services/api';
 
 const NAVY = '#1B3A5C';
 const GREEN = '#43A047';
 const BG = '#F5F7FA';
 const FONT = "'Inter', sans-serif";
 
-const typeBadgeColors: Record<Transaction['type'], { bg: string; color: string }> = {
-  send: { bg: '#E3F2FD', color: '#1565C0' },
-  receive: { bg: '#E8F5E9', color: '#2E7D32' },
-  exchange: { bg: '#F3E5F5', color: '#7B1FA2' },
-  topup: { bg: '#E0F2F1', color: '#00796B' },
-  withdrawal: { bg: '#FFF3E0', color: '#E65100' },
+type AdminTxn = {
+  id: number;
+  reference?: string;
+  type?: string;
+  status?: string;
+  currency?: string;
+  amount?: number;
+  fee?: number;
+  description?: string;
+  created_at?: string;
 };
 
-const typeLabel: Record<Transaction['type'], string> = {
-  send: 'Send',
-  receive: 'Receive',
-  exchange: 'Exchange',
-  topup: 'Top-up',
-  withdrawal: 'Withdrawal',
-};
-
-const statusBadgeColors: Record<Transaction['status'], { bg: string; color: string }> = {
+const statusBadgeColors: Record<string, { bg: string; color: string }> = {
   completed: { bg: '#E8F5E9', color: '#2E7D32' },
   pending: { bg: '#FFF3E0', color: '#E65100' },
   failed: { bg: '#FFEBEE', color: '#C62828' },
   cancelled: { bg: '#ECEFF1', color: '#546E7A' },
 };
 
-const statusLabel: Record<Transaction['status'], string> = {
-  completed: 'Completed',
-  pending: 'Pending',
-  failed: 'Failed',
-  cancelled: 'Cancelled',
-};
-
-const methodLabel: Record<Transaction['method'], string> = {
-  mobile_money: 'Mobile Money',
-  bank: 'Bank',
-  card: 'Card',
-  crypto: 'Crypto',
-};
-
 const TransactionsPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [typeFilter, setTypeFilter] = useState<'all' | Transaction['type']>('all');
-  const [methodFilter, setMethodFilter] = useState<'all' | Transaction['method']>('all');
-  const [statusFilter, setStatusFilter] = useState<'all' | Transaction['status']>('all');
+  const [typeFilter, setTypeFilter] = useState<'all' | string>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | string>('all');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [rows, setRows] = useState<AdminTxn[]>([]);
+  const [stats, setStats] = useState({ total: 0, completed: 0, pending: 0, failed: 0 });
 
-  const filteredTransactions = transactions.filter((txn) => {
-    const matchesSearch =
-      searchQuery === '' ||
-      txn.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      txn.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      txn.recipientName.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesType = typeFilter === 'all' || txn.type === typeFilter;
-    const matchesMethod = methodFilter === 'all' || txn.method === methodFilter;
-    const matchesStatus = statusFilter === 'all' || txn.status === statusFilter;
-    return matchesSearch && matchesType && matchesMethod && matchesStatus;
-  });
+  const load = async () => {
+    setLoading(true);
+    setError(null);
+    const params = new URLSearchParams();
+    if (statusFilter !== 'all') params.set('status', statusFilter);
+    if (typeFilter !== 'all') params.set('type', typeFilter);
+    if (searchQuery.trim()) params.set('search', searchQuery.trim());
+    params.set('limit', '50');
+    const res = await api.listTransactions(params.toString());
+    setLoading(false);
+    if (!res?.success) {
+      setError(res?.message || 'Failed to load transactions');
+      setRows([]);
+      setStats({ total: 0, completed: 0, pending: 0, failed: 0 });
+      return;
+    }
+    const data = res.data || {};
+    setRows((data.transactions || []) as AdminTxn[]);
+    setStats({
+      total: Number(data.total) || 0,
+      completed: Number(data.completed) || 0,
+      pending: Number(data.pending) || 0,
+      failed: Number(data.failed) || 0,
+    });
+  };
 
-  const totalTxns = transactions.length;
-  const completedTxns = transactions.filter((t) => t.status === 'completed').length;
-  const pendingTxns = transactions.filter((t) => t.status === 'pending').length;
-  const failedTxns = transactions.filter((t) => t.status === 'failed').length;
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [typeFilter, statusFilter]);
 
   const statCards = [
-    { label: 'Total Transactions', value: totalTxns, icon: <ArrowUpDown size={22} color="#fff" />, bg: NAVY },
-    { label: 'Completed', value: completedTxns, icon: <CheckCircle size={22} color="#fff" />, bg: GREEN },
-    { label: 'Pending', value: pendingTxns, icon: <Clock size={22} color="#fff" />, bg: '#E65100' },
-    { label: 'Failed', value: failedTxns, icon: <XCircle size={22} color="#fff" />, bg: '#C62828' },
+    { label: 'Total Transactions', value: stats.total, icon: <ArrowUpDown size={22} color="#fff" />, bg: NAVY },
+    { label: 'Completed', value: stats.completed, icon: <CheckCircle size={22} color="#fff" />, bg: GREEN },
+    { label: 'Pending', value: stats.pending, icon: <Clock size={22} color="#fff" />, bg: '#E65100' },
+    { label: 'Failed', value: stats.failed, icon: <XCircle size={22} color="#fff" />, bg: '#C62828' },
   ];
 
   const selectStyle: React.CSSProperties = {
@@ -89,13 +88,11 @@ const TransactionsPage: React.FC = () => {
 
   return (
     <div style={{ fontFamily: FONT, backgroundColor: BG, minHeight: '100vh', padding: 32 }}>
-      {/* Header */}
       <div style={{ marginBottom: 28 }}>
         <h1 style={{ margin: 0, fontSize: 28, fontWeight: 700, color: NAVY }}>Transactions</h1>
         <p style={{ margin: '4px 0 0', fontSize: 14, color: '#6B7280' }}>Monitor all financial activity</p>
       </div>
 
-      {/* Stat Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20, marginBottom: 28 }}>
         {statCards.map((card) => (
           <div
@@ -132,7 +129,6 @@ const TransactionsPage: React.FC = () => {
         ))}
       </div>
 
-      {/* Filters */}
       <div
         style={{
           backgroundColor: '#fff',
@@ -150,9 +146,12 @@ const TransactionsPage: React.FC = () => {
           <Search size={18} color="#9CA3AF" style={{ position: 'absolute', left: 12, top: 10 }} />
           <input
             type="text"
-            placeholder="Search by ID, user or recipient..."
+            placeholder="Search by reference or description..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') load();
+            }}
             style={{
               width: '100%',
               padding: '10px 12px 10px 40px',
@@ -166,43 +165,40 @@ const TransactionsPage: React.FC = () => {
             }}
           />
         </div>
-        <select
-          value={typeFilter}
-          onChange={(e) => setTypeFilter(e.target.value as 'all' | Transaction['type'])}
-          style={selectStyle}
-        >
+        <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} style={selectStyle}>
           <option value="all">All Types</option>
           <option value="send">Send</option>
           <option value="receive">Receive</option>
           <option value="exchange">Exchange</option>
           <option value="topup">Top-up</option>
           <option value="withdrawal">Withdrawal</option>
+          <option value="cash_in">Cash In</option>
+          <option value="cash_out">Cash Out</option>
         </select>
-        <select
-          value={methodFilter}
-          onChange={(e) => setMethodFilter(e.target.value as 'all' | Transaction['method'])}
-          style={selectStyle}
-        >
-          <option value="all">All Methods</option>
-          <option value="mobile_money">Mobile Money</option>
-          <option value="bank">Bank</option>
-          <option value="card">Card</option>
-          <option value="crypto">Crypto</option>
-        </select>
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value as 'all' | Transaction['status'])}
-          style={selectStyle}
-        >
+        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} style={selectStyle}>
           <option value="all">All Statuses</option>
           <option value="completed">Completed</option>
           <option value="pending">Pending</option>
           <option value="failed">Failed</option>
           <option value="cancelled">Cancelled</option>
         </select>
+        <button
+          onClick={load}
+          style={{
+            padding: '10px 16px',
+            border: '1px solid #E5E7EB',
+            borderRadius: 8,
+            backgroundColor: '#fff',
+            cursor: 'pointer',
+            fontFamily: FONT,
+            fontWeight: 700,
+            color: NAVY,
+          }}
+        >
+          Apply
+        </button>
       </div>
 
-      {/* Table */}
       <div
         style={{
           backgroundColor: '#fff',
@@ -211,11 +207,16 @@ const TransactionsPage: React.FC = () => {
           overflow: 'hidden',
         }}
       >
+        {(loading || error) && (
+          <div style={{ padding: 14, color: error ? '#C62828' : '#6B7280', fontWeight: 600 }}>
+            {error ? error : 'Loading…'}
+          </div>
+        )}
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
             <thead>
               <tr style={{ backgroundColor: '#F9FAFB', borderBottom: '1px solid #E5E7EB' }}>
-                {['ID', 'User', 'Type', 'Method', 'Amount', 'Fee', 'Status', 'Recipient', 'Date'].map((h) => (
+                {['ID', 'Type', 'Amount', 'Fee', 'Currency', 'Status', 'Reference', 'Description', 'Date'].map((h) => (
                   <th
                     key={h}
                     style={{
@@ -235,42 +236,22 @@ const TransactionsPage: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredTransactions.map((txn) => (
+              {rows.map((txn) => (
                 <tr
                   key={txn.id}
                   style={{ borderBottom: '1px solid #F3F4F6' }}
                   onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#F9FAFB')}
                   onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
                 >
-                  <td style={{ padding: '14px 16px', color: NAVY, fontWeight: 600, whiteSpace: 'nowrap' }}>
-                    {txn.id}
-                  </td>
-                  <td style={{ padding: '14px 16px', color: '#1F2937', fontWeight: 500 }}>{txn.userName}</td>
-                  <td style={{ padding: '14px 16px' }}>
-                    <span
-                      style={{
-                        display: 'inline-block',
-                        padding: '4px 10px',
-                        borderRadius: 20,
-                        fontSize: 12,
-                        fontWeight: 600,
-                        backgroundColor: typeBadgeColors[txn.type].bg,
-                        color: typeBadgeColors[txn.type].color,
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {typeLabel[txn.type]}
-                    </span>
-                  </td>
-                  <td style={{ padding: '14px 16px', color: '#374151', whiteSpace: 'nowrap' }}>
-                    {methodLabel[txn.method]}
-                  </td>
+                  <td style={{ padding: '14px 16px', color: NAVY, fontWeight: 600, whiteSpace: 'nowrap' }}>#{txn.id}</td>
+                  <td style={{ padding: '14px 16px', color: '#374151', whiteSpace: 'nowrap' }}>{txn.type || '-'}</td>
                   <td style={{ padding: '14px 16px', color: '#1F2937', fontWeight: 600, whiteSpace: 'nowrap' }}>
-                    {txn.amount.toLocaleString()} {txn.currency}
+                    {(txn.amount || 0).toLocaleString()}
                   </td>
                   <td style={{ padding: '14px 16px', color: '#6B7280', whiteSpace: 'nowrap' }}>
-                    {txn.fee.toLocaleString()} {txn.currency}
+                    {(txn.fee || 0).toLocaleString()}
                   </td>
+                  <td style={{ padding: '14px 16px', color: '#374151', whiteSpace: 'nowrap' }}>{txn.currency || '-'}</td>
                   <td style={{ padding: '14px 16px' }}>
                     <span
                       style={{
@@ -279,24 +260,26 @@ const TransactionsPage: React.FC = () => {
                         borderRadius: 20,
                         fontSize: 12,
                         fontWeight: 600,
-                        backgroundColor: statusBadgeColors[txn.status].bg,
-                        color: statusBadgeColors[txn.status].color,
+                        textTransform: 'capitalize',
+                        backgroundColor: statusBadgeColors[txn.status || '']?.bg || '#ECEFF1',
+                        color: statusBadgeColors[txn.status || '']?.color || '#546E7A',
                         whiteSpace: 'nowrap',
                       }}
                     >
-                      {statusLabel[txn.status]}
+                      {txn.status || '-'}
                     </span>
                   </td>
-                  <td style={{ padding: '14px 16px', color: '#374151', whiteSpace: 'nowrap' }}>
-                    {txn.recipientName}
+                  <td style={{ padding: '14px 16px', color: '#374151', whiteSpace: 'nowrap' }}>{txn.reference || '-'}</td>
+                  <td style={{ padding: '14px 16px', color: '#6B7280' }}>{txn.description || '-'}</td>
+                  <td style={{ padding: '14px 16px', color: '#6B7280', whiteSpace: 'nowrap' }}>
+                    {String(txn.created_at || '').slice(0, 16)}
                   </td>
-                  <td style={{ padding: '14px 16px', color: '#6B7280', whiteSpace: 'nowrap' }}>{txn.createdAt}</td>
                 </tr>
               ))}
-              {filteredTransactions.length === 0 && (
+              {!loading && !error && rows.length === 0 && (
                 <tr>
                   <td colSpan={9} style={{ padding: 40, textAlign: 'center', color: '#9CA3AF' }}>
-                    No transactions found matching your filters.
+                    No transactions found.
                   </td>
                 </tr>
               )}
@@ -309,3 +292,4 @@ const TransactionsPage: React.FC = () => {
 };
 
 export default TransactionsPage;
+

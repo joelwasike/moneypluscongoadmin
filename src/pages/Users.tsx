@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Search, Users as UsersIcon, UserCheck, UserX, Clock, Eye, ToggleLeft, ToggleRight, ArrowLeft, Mail, Phone, MapPin, Calendar, CreditCard, ShieldCheck, ArrowLeftRight } from 'lucide-react';
-import { users as initialUsers, User, transactions, kycSubmissions } from '../data/mockData';
+import { User } from '../data/mockData';
 import api from '../services/api';
 
 const NAVY = '#1B3A5C';
@@ -74,15 +74,40 @@ function sumWalletBalance(wallets: any): { balance: number; currency: string } {
 
 // ─── User Detail View ───
 const UserDetail: React.FC<{ user: User; onBack: () => void; onUserUpdated: (u: User) => void }> = ({ user, onBack, onUserUpdated }) => {
-  const userTransactions = transactions.filter(t => String(t.userId) === String(user.id));
-  const userKyc = kycSubmissions.filter(k => String(k.userId) === String(user.id));
-  const totalSent = userTransactions.filter(t => t.type === 'send').reduce((s, t) => s + t.amount, 0);
-  const totalReceived = userTransactions.filter(t => t.type === 'receive').reduce((s, t) => s + t.amount, 0);
-  const totalFees = userTransactions.reduce((s, t) => s + t.fee, 0);
+  const [detail, setDetail] = useState<any>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailError, setDetailError] = useState<string | null>(null);
+
   const role = user.role || 'user';
   const numericId = asNumericId(user.id);
 
   const canPersistRole = numericId != null;
+
+  useEffect(() => {
+    let canceled = false;
+    (async () => {
+      if (!numericId) return;
+      setDetailLoading(true);
+      setDetailError(null);
+      const res = await api.getUser(numericId);
+      if (canceled) return;
+      setDetailLoading(false);
+      if (!res?.success) {
+        setDetailError(res?.message || 'Failed to load user detail');
+        return;
+      }
+      setDetail(res.data);
+    })();
+    return () => {
+      canceled = true;
+    };
+  }, [numericId]);
+
+  const userTransactions = (detail?.transactions || []) as any[];
+  const userKyc = detail?.kyc?.data;
+  const totalSent = Number(detail?.total_sent) || 0;
+  const totalReceived = Number(detail?.total_received) || 0;
+  const totalFees = Number(detail?.total_fees) || 0;
 
   const handleToggleAgent = async () => {
     const newRole: 'user' | 'agent' = role === 'agent' ? 'user' : 'agent';
@@ -180,12 +205,19 @@ const UserDetail: React.FC<{ user: User; onBack: () => void; onUserUpdated: (u: 
         </div>
       </div>
 
+      {detailLoading && (
+        <div style={{ marginBottom: 20, color: '#6B7280' }}>Loading user details…</div>
+      )}
+      {detailError && (
+        <div style={{ marginBottom: 20, color: '#C62828', fontWeight: 600 }}>{detailError}</div>
+      )}
+
       {/* Info Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20, marginBottom: 24 }}>
         {[
           { icon: <Mail size={16} color={GREEN} />, label: 'Email', value: user.email },
           { icon: <Phone size={16} color={GREEN} />, label: 'Phone', value: user.phone },
-          { icon: <MapPin size={16} color={GREEN} />, label: 'Country', value: `${user.countryFlag} ${user.country}` },
+          { icon: <MapPin size={16} color={GREEN} />, label: 'Country', value: user.countryFlag ? `${user.countryFlag} ${user.country}` : user.country },
           { icon: <CreditCard size={16} color={GREEN} />, label: 'Balance', value: `${user.balance.toLocaleString()} ${user.currency}` },
           { icon: <Calendar size={16} color={GREEN} />, label: 'Joined', value: user.createdAt },
           { icon: <Calendar size={16} color={GREEN} />, label: 'Last Login', value: user.lastLogin },
@@ -231,7 +263,7 @@ const UserDetail: React.FC<{ user: User; onBack: () => void; onUserUpdated: (u: 
       </div>
 
       {/* KYC Info */}
-      {userKyc.length > 0 && (
+      {userKyc && (
         <div style={{
           backgroundColor: '#fff', borderRadius: 16, padding: 24, marginBottom: 24,
           boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
@@ -252,22 +284,20 @@ const UserDetail: React.FC<{ user: User; onBack: () => void; onUserUpdated: (u: 
                 </tr>
               </thead>
               <tbody>
-                {userKyc.map(k => (
-                  <tr key={k.id} style={{ borderBottom: '1px solid #F3F4F6' }}>
-                    <td style={{ padding: '12px 16px', fontWeight: 600, color: NAVY }}>{k.id}</td>
-                    <td style={{ padding: '12px 16px', color: '#374151' }}>{k.documentType}</td>
-                    <td style={{ padding: '12px 16px', color: '#374151' }}>{k.submittedAt}</td>
-                    <td style={{ padding: '12px 16px' }}>
-                      <span style={{
-                        display: 'inline-block', padding: '4px 10px', borderRadius: 20, fontSize: 12,
-                        fontWeight: 600, textTransform: 'capitalize',
-                        backgroundColor: k.status === 'approved' ? '#E8F5E9' : k.status === 'rejected' ? '#FFEBEE' : '#FFF3E0',
-                        color: k.status === 'approved' ? '#2E7D32' : k.status === 'rejected' ? '#C62828' : '#E65100',
-                      }}>{k.status}</span>
-                    </td>
-                    <td style={{ padding: '12px 16px', color: '#6B7280', fontSize: 13 }}>{k.notes || '-'}</td>
-                  </tr>
-                ))}
+                <tr style={{ borderBottom: '1px solid #F3F4F6' }}>
+                  <td style={{ padding: '12px 16px', fontWeight: 600, color: NAVY }}>{userKyc.id}</td>
+                  <td style={{ padding: '12px 16px', color: '#374151' }}>{userKyc.id_type}</td>
+                  <td style={{ padding: '12px 16px', color: '#374151' }}>{String(userKyc.submitted_at || userKyc.created_at || '').slice(0, 16)}</td>
+                  <td style={{ padding: '12px 16px' }}>
+                    <span style={{
+                      display: 'inline-block', padding: '4px 10px', borderRadius: 20, fontSize: 12,
+                      fontWeight: 600, textTransform: 'capitalize',
+                      backgroundColor: userKyc.status === 'approved' ? '#E8F5E9' : userKyc.status === 'rejected' ? '#FFEBEE' : '#FFF3E0',
+                      color: userKyc.status === 'approved' ? '#2E7D32' : userKyc.status === 'rejected' ? '#C62828' : '#E65100',
+                    }}>{userKyc.status}</span>
+                  </td>
+                  <td style={{ padding: '12px 16px', color: '#6B7280', fontSize: 13 }}>{userKyc.rejection_reason || '-'}</td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -313,7 +343,7 @@ const UserDetail: React.FC<{ user: User; onBack: () => void; onUserUpdated: (u: 
                       }}>{tx.type}</span>
                     </td>
                     <td style={{ padding: '12px 16px', color: '#374151', whiteSpace: 'nowrap' }}>
-                      {tx.method.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase())}
+                      {tx.method.replace('_', ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())}
                     </td>
                     <td style={{ padding: '12px 16px', fontWeight: 600, color: '#1F2937', whiteSpace: 'nowrap' }}>
                       {tx.amount.toLocaleString()} {tx.currency}
@@ -349,7 +379,7 @@ const UsersPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | User['status']>('all');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [userList, setUserList] = useState<User[]>(initialUsers.map(u => ({ ...u })));
+  const [userList, setUserList] = useState<User[]>([]);
   const [loadingRemote, setLoadingRemote] = useState(false);
 
   useEffect(() => {
