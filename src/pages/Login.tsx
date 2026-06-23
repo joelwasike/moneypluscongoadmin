@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '../components/Toast';
+import api from '../services/api';
 
 const NAVY = '#1B3A5C';
 const GREEN = '#43A047';
 const FONT = "'Inter', sans-serif";
 
 interface LoginProps {
-  onLogin: () => void;
+  onLogin: (token?: string) => void;
 }
 
 export default function Login({ onLogin }: LoginProps) {
@@ -18,7 +19,7 @@ export default function Login({ onLogin }: LoginProps) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -28,11 +29,30 @@ export default function Login({ onLogin }: LoginProps) {
     }
 
     setLoading(true);
-    // Simulate login
-    setTimeout(() => {
+    try {
+      const res = await api.login(email.trim(), password);
+      if (!res?.success) {
+        setError(res?.message || 'Invalid email or password.');
+        return;
+      }
+
+      const token =
+        res?.data?.token ??
+        res?.data?.access_token ??
+        res?.token ??
+        res?.access_token;
+
+      if (!token || typeof token !== 'string') {
+        setError('Login succeeded but no token was returned by the server.');
+        return;
+      }
+
+      onLogin(token);
+    } catch (e: any) {
+      setError(e?.message || 'Login failed. Please try again.');
+    } finally {
       setLoading(false);
-      onLogin();
-    }, 800);
+    }
   };
 
   return (

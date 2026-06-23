@@ -21,6 +21,9 @@ import SplitsAdmin from './pages/SplitsAdmin';
 import ChatSupport from './pages/ChatSupport';
 import HelpArticles from './pages/HelpArticles';
 import Login from './pages/Login';
+import Corridors from './pages/Corridors';
+import Agencies from './pages/Agencies';
+import Compliance from './pages/Compliance';
 import { ToastProvider } from './components/Toast';
 
 interface AuthContextType {
@@ -69,7 +72,10 @@ function App() {
               <Route path="analytics" element={<Analytics />} />
               <Route path="users" element={<Users />} />
               <Route path="agents" element={<Agents />} />
+              <Route path="agencies" element={<Agencies />} />
               <Route path="transactions" element={<Transactions />} />
+              <Route path="compliance" element={<Compliance />} />
+              <Route path="corridors" element={<Corridors />} />
               <Route path="kyc" element={<KycReview />} />
               <Route path="wallets" element={<Wallets />} />
               <Route path="cards-admin" element={<CardsAdmin />} />

@@ -91,6 +91,25 @@ const api = {
 
   // Crypto Holdings
   listCryptoHoldings: () => request('GET', '/crypto-holdings'),
+
+  // Corridors
+  listCorridors: () => request('GET', '/corridors'),
+  createCorridor: (data: any) => request('POST', '/corridors', data),
+  updateCorridor: (id: number, data: any) => request('PUT', `/corridors/${id}`, data),
+  toggleCorridor: (id: number) => request('PUT', `/corridors/${id}/toggle`),
+  deleteCorridor: (id: number) => request('DELETE', `/corridors/${id}`),
+
+  // Agencies
+  listAgencies: (params = '') => request('GET', `/agencies${params ? '?' + params : ''}`),
+  getAgency: (id: number) => request('GET', `/agencies/${id}`),
+  createAgency: (data: any) => request('POST', '/agencies', data),
+  updateAgency: (id: number, data: any) => request('PUT', `/agencies/${id}`, data),
+  toggleAgency: (id: number) => request('PUT', `/agencies/${id}/toggle`),
+  deleteAgency: (id: number) => request('DELETE', `/agencies/${id}`),
+
+  // Compliance
+  listCallbacks: (params = '') => request('GET', `/compliance/callbacks${params ? '?' + params : ''}`),
+  listComplianceTransactions: (params = '') => request('GET', `/compliance/transactions${params ? '?' + params : ''}`),
 };
 
 export default api;

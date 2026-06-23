@@ -19,6 +19,9 @@ import {
   Split,
   MessageSquare,
   BookOpen,
+  Store,
+  Route,
+  AlertTriangle,
 } from 'lucide-react';
 
 const SIDEBAR_WIDTH = 260;
@@ -57,7 +60,9 @@ const sections: NavSection[] = [
     items: [
       { label: 'Users', path: '/users', icon: <Users size={ICON_SIZE} /> },
       { label: 'Agents', path: '/agents', icon: <UserCheck size={ICON_SIZE} /> },
+      { label: 'Agencies', path: '/agencies', icon: <Store size={ICON_SIZE} /> },
       { label: 'Transactions', path: '/transactions', icon: <ArrowLeftRight size={ICON_SIZE} /> },
+      { label: 'Compliance', path: '/compliance', icon: <AlertTriangle size={ICON_SIZE} /> },
       { label: 'KYC Review', path: '/kyc', icon: <ShieldCheck size={ICON_SIZE} /> },
       { label: 'Wallets', path: '/wallets', icon: <Wallet size={ICON_SIZE} /> },
       { label: 'Cards', path: '/cards-admin', icon: <CreditCard size={ICON_SIZE} /> },
@@ -67,6 +72,7 @@ const sections: NavSection[] = [
   {
     title: 'CONFIGURATION',
     items: [
+      { label: 'Corridors', path: '/corridors', icon: <Route size={ICON_SIZE} /> },
       { label: 'Exchange Rates', path: '/exchange-rates', icon: <DollarSign size={ICON_SIZE} /> },
       { label: 'Fees & Charges', path: '/fees', icon: <Receipt size={ICON_SIZE} /> },
       { label: 'Countries', path: '/countries', icon: <Globe size={ICON_SIZE} /> },

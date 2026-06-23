@@ -49,6 +49,13 @@ const txTypeColors: Record<string, { bg: string; color: string }> = {
   withdrawal: { bg: '#FCE4EC', color: '#AD1457' },
 };
 
+function formatTxMethod(method: unknown): string {
+  if (typeof method !== 'string' || method.trim() === '') return '-';
+  return method
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (c: string) => c.toUpperCase());
+}
+
 function asNumericId(id: User['id']): number | null {
   if (typeof id === 'number' && Number.isFinite(id)) return id;
   if (typeof id === 'string' && /^\d+$/.test(id)) return Number(id);
@@ -343,7 +350,7 @@ const UserDetail: React.FC<{ user: User; onBack: () => void; onUserUpdated: (u: 
                       }}>{tx.type}</span>
                     </td>
                     <td style={{ padding: '12px 16px', color: '#374151', whiteSpace: 'nowrap' }}>
-                      {tx.method.replace('_', ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())}
+                      {formatTxMethod(tx.method)}
                     </td>
                     <td style={{ padding: '12px 16px', fontWeight: 600, color: '#1F2937', whiteSpace: 'nowrap' }}>
                       {tx.amount.toLocaleString()} {tx.currency}
