@@ -51,9 +51,13 @@ const api = {
   listAgents: () => request('GET', '/agents'),
   getAgent: (id: number) => request('GET', `/agents/${id}`),
 
-  // KYC
+  // KYC (personal)
   listKYC: (status = '') => request('GET', `/kyc${status ? '?status=' + status : ''}`),
   reviewKYC: (id: number, status: string, reason = '') => request('PUT', `/kyc/${id}`, { status, reason }),
+
+  // KYB (business)
+  listKYB: (status = '') => request('GET', `/kyb${status ? '?status=' + status : ''}`),
+  reviewKYB: (id: number, status: string, reason = '') => request('PUT', `/kyb/${id}`, { status, reason }),
 
   // Transactions
   listTransactions: (params = '') => request('GET', `/transactions${params ? '?' + params : ''}`),
