@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Search, Users as UsersIcon, UserCheck, UserX, Clock, Eye, ToggleLeft, ToggleRight, ArrowLeft, Mail, Phone, MapPin, Calendar, CreditCard, ShieldCheck, ArrowLeftRight } from 'lucide-react';
 import { User } from '../data/mockData';
 import api from '../services/api';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const NAVY = '#1B3A5C';
 const GREEN = '#43A047';
@@ -19,19 +20,6 @@ const statusBadgeColors: Record<User['status'], { bg: string; color: string }> =
   active: { bg: '#E8F5E9', color: '#2E7D32' },
   suspended: { bg: '#FFEBEE', color: '#C62828' },
   pending: { bg: '#FFF3E0', color: '#E65100' },
-};
-
-const kycLabel: Record<User['kycStatus'], string> = {
-  verified: 'Verified',
-  pending: 'Pending',
-  rejected: 'Rejected',
-  not_submitted: 'Not Submitted',
-};
-
-const statusLabel: Record<User['status'], string> = {
-  active: 'Active',
-  suspended: 'Suspended',
-  pending: 'Pending',
 };
 
 const txStatusColors: Record<string, { bg: string; color: string }> = {
@@ -81,9 +69,23 @@ function sumWalletBalance(wallets: any): { balance: number; currency: string } {
 
 // ─── User Detail View ───
 const UserDetail: React.FC<{ user: User; onBack: () => void; onUserUpdated: (u: User) => void }> = ({ user, onBack, onUserUpdated }) => {
+  const { t } = useLanguage();
   const [detail, setDetail] = useState<any>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailError, setDetailError] = useState<string | null>(null);
+
+  const kycLabel: Record<User['kycStatus'], string> = {
+    verified: t('users.kycStatus.verified'),
+    pending: t('users.kycStatus.pending'),
+    rejected: t('users.kycStatus.rejected'),
+    not_submitted: t('users.kycStatus.not_submitted'),
+  };
+
+  const statusLabel: Record<User['status'], string> = {
+    active: t('users.userStatus.active'),
+    suspended: t('users.userStatus.suspended'),
+    pending: t('users.userStatus.pending'),
+  };
 
   const role = user.role || 'user';
   const numericId = asNumericId(user.id);
@@ -149,7 +151,7 @@ const UserDetail: React.FC<{ user: User; onBack: () => void; onUserUpdated: (u: 
           boxShadow: '0 1px 3px rgba(0,0,0,0.06)', marginBottom: 24,
         }}
       >
-        <ArrowLeft size={16} /> Back to Users
+        <ArrowLeft size={16} /> {t('common.back')}
       </button>
 
       {/* Header Card */}
@@ -206,14 +208,14 @@ const UserDetail: React.FC<{ user: User; onBack: () => void; onUserUpdated: (u: 
               title={canPersistRole ? '' : 'Mock user: API update disabled'}
             >
               {role === 'agent' ? <ToggleRight size={16} color={GREEN} /> : <ToggleLeft size={16} color="#9CA3AF" />}
-              {role === 'agent' ? 'Agent' : 'User'}
+              {role === 'agent' ? t('common.agent') : 'User'}
             </button>
           </div>
         </div>
       </div>
 
       {detailLoading && (
-        <div style={{ marginBottom: 20, color: '#6B7280' }}>Loading user details…</div>
+        <div style={{ marginBottom: 20, color: '#6B7280' }}>{t('common.loading')}</div>
       )}
       {detailError && (
         <div style={{ marginBottom: 20, color: '#C62828', fontWeight: 600 }}>{detailError}</div>
@@ -222,12 +224,12 @@ const UserDetail: React.FC<{ user: User; onBack: () => void; onUserUpdated: (u: 
       {/* Info Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20, marginBottom: 24 }}>
         {[
-          { icon: <Mail size={16} color={GREEN} />, label: 'Email', value: user.email },
-          { icon: <Phone size={16} color={GREEN} />, label: 'Phone', value: user.phone },
-          { icon: <MapPin size={16} color={GREEN} />, label: 'Country', value: user.countryFlag ? `${user.countryFlag} ${user.country}` : user.country },
-          { icon: <CreditCard size={16} color={GREEN} />, label: 'Balance', value: `${user.balance.toLocaleString()} ${user.currency}` },
-          { icon: <Calendar size={16} color={GREEN} />, label: 'Joined', value: user.createdAt },
-          { icon: <Calendar size={16} color={GREEN} />, label: 'Last Login', value: user.lastLogin },
+          { icon: <Mail size={16} color={GREEN} />, label: t('users.detail.email') || 'Email', value: user.email },
+          { icon: <Phone size={16} color={GREEN} />, label: t('users.detail.phone') || 'Phone', value: user.phone },
+          { icon: <MapPin size={16} color={GREEN} />, label: t('users.detail.country') || 'Country', value: user.countryFlag ? `${user.countryFlag} ${user.country}` : user.country },
+          { icon: <CreditCard size={16} color={GREEN} />, label: t('users.detail.walletBalance') || 'Balance', value: `${user.balance.toLocaleString()} ${user.currency}` },
+          { icon: <Calendar size={16} color={GREEN} />, label: t('users.detail.joined') || 'Joined', value: user.createdAt },
+          { icon: <Calendar size={16} color={GREEN} />, label: t('users.detail.kycStatus') || 'Last Login', value: user.lastLogin },
         ].map((item) => (
           <div key={item.label} style={{
             backgroundColor: '#fff', borderRadius: 12, padding: '16px 20px',
@@ -245,7 +247,7 @@ const UserDetail: React.FC<{ user: User; onBack: () => void; onUserUpdated: (u: 
       {/* Financial Summary */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20, marginBottom: 24 }}>
         {[
-          { label: 'Transactions', value: userTransactions.length, bg: NAVY },
+          { label: t('users.detail.transactions'), value: userTransactions.length, bg: NAVY },
           { label: 'Total Sent', value: `${totalSent.toLocaleString()}`, bg: '#1565C0' },
           { label: 'Total Received', value: `${totalReceived.toLocaleString()}`, bg: GREEN },
           { label: 'Total Fees Paid', value: `${totalFees.toLocaleString()}`, bg: '#E65100' },
@@ -276,7 +278,7 @@ const UserDetail: React.FC<{ user: User; onBack: () => void; onUserUpdated: (u: 
           boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
         }}>
           <h3 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 700, color: NAVY, display: 'flex', alignItems: 'center', gap: 10 }}>
-            <ShieldCheck size={18} color={GREEN} /> KYC Submissions
+            <ShieldCheck size={18} color={GREEN} /> {t('users.detail.kycDetails')}
           </h3>
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
@@ -317,10 +319,10 @@ const UserDetail: React.FC<{ user: User; onBack: () => void; onUserUpdated: (u: 
         boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
       }}>
         <h3 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 700, color: NAVY, display: 'flex', alignItems: 'center', gap: 10 }}>
-          <ArrowLeftRight size={18} color={GREEN} /> Transaction History
+          <ArrowLeftRight size={18} color={GREEN} /> {t('users.detail.transactions')}
         </h3>
         {userTransactions.length === 0 ? (
-          <div style={{ padding: 40, textAlign: 'center', color: '#9CA3AF' }}>No transactions found for this user.</div>
+          <div style={{ padding: 40, textAlign: 'center', color: '#9CA3AF' }}>{t('users.detail.noTransactions')}</div>
         ) : (
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
@@ -383,11 +385,25 @@ const UserDetail: React.FC<{ user: User; onBack: () => void; onUserUpdated: (u: 
 
 // ─── Users List ───
 const UsersPage: React.FC = () => {
+  const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | User['status']>('all');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [userList, setUserList] = useState<User[]>([]);
   const [loadingRemote, setLoadingRemote] = useState(false);
+
+  const kycLabel: Record<User['kycStatus'], string> = {
+    verified: t('users.kycStatus.verified'),
+    pending: t('users.kycStatus.pending'),
+    rejected: t('users.kycStatus.rejected'),
+    not_submitted: t('users.kycStatus.not_submitted'),
+  };
+
+  const statusLabel: Record<User['status'], string> = {
+    active: t('users.userStatus.active'),
+    suspended: t('users.userStatus.suspended'),
+    pending: t('users.userStatus.pending'),
+  };
 
   useEffect(() => {
     let canceled = false;
@@ -463,19 +479,19 @@ const UsersPage: React.FC = () => {
   }
 
   const statCards = [
-    { label: 'Total Users', value: totalUsers, icon: <UsersIcon size={22} color="#fff" />, bg: NAVY },
-    { label: 'Active', value: activeUsers, icon: <UserCheck size={22} color="#fff" />, bg: GREEN },
-    { label: 'Suspended', value: suspendedUsers, icon: <UserX size={22} color="#fff" />, bg: '#C62828' },
-    { label: 'Pending KYC', value: pendingKyc, icon: <Clock size={22} color="#fff" />, bg: '#E65100' },
+    { label: t('users.totalUsers'), value: totalUsers, icon: <UsersIcon size={22} color="#fff" />, bg: NAVY },
+    { label: t('users.activeUsers'), value: activeUsers, icon: <UserCheck size={22} color="#fff" />, bg: GREEN },
+    { label: t('users.suspended'), value: suspendedUsers, icon: <UserX size={22} color="#fff" />, bg: '#C62828' },
+    { label: t('users.pendingKyc'), value: pendingKyc, icon: <Clock size={22} color="#fff" />, bg: '#E65100' },
   ];
 
   return (
     <div style={{ fontFamily: FONT, backgroundColor: BG, minHeight: '100vh', padding: 32 }}>
       {/* Header */}
       <div style={{ marginBottom: 28 }}>
-        <h1 style={{ margin: 0, fontSize: 28, fontWeight: 700, color: NAVY }}>Users</h1>
+        <h1 style={{ margin: 0, fontSize: 28, fontWeight: 700, color: NAVY }}>{t('users.title')}</h1>
         <p style={{ margin: '4px 0 0', fontSize: 14, color: '#6B7280' }}>
-          Manage all registered users{loadingRemote ? ' (loading server data...)' : ''}
+          Manage all registered users{loadingRemote ? ` (${t('common.loading')})` : ''}
         </p>
       </div>
 
@@ -533,7 +549,7 @@ const UsersPage: React.FC = () => {
           <Search size={18} color="#9CA3AF" style={{ position: 'absolute', left: 12, top: 10 }} />
           <input
             type="text"
-            placeholder="Search by name, email, ID or phone..."
+            placeholder={t('users.searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             style={{
@@ -566,9 +582,9 @@ const UsersPage: React.FC = () => {
           }}
         >
           <option value="all">All Statuses</option>
-          <option value="active">Active</option>
-          <option value="suspended">Suspended</option>
-          <option value="pending">Pending</option>
+          <option value="active">{t('users.userStatus.active')}</option>
+          <option value="suspended">{t('users.userStatus.suspended')}</option>
+          <option value="pending">{t('users.userStatus.pending')}</option>
         </select>
       </div>
 
@@ -585,7 +601,16 @@ const UsersPage: React.FC = () => {
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
             <thead>
               <tr style={{ backgroundColor: '#F9FAFB', borderBottom: '1px solid #E5E7EB' }}>
-                {['ID', 'User', 'Country', 'Phone', 'Balance', 'KYC Status', 'Account Status', 'Actions'].map(
+                {[
+                  'ID',
+                  t('users.columns.user'),
+                  t('users.columns.country'),
+                  t('users.columns.phone'),
+                  t('users.columns.walletBalance'),
+                  t('users.columns.kyc'),
+                  t('users.columns.status'),
+                  t('users.columns.actions'),
+                ].map(
                   (h) => (
                     <th
                       key={h}
@@ -689,11 +714,11 @@ const UsersPage: React.FC = () => {
                         }}
                       >
                         <Eye size={14} />
-                        View
+                        {t('common.view')}
                       </button>
                       <button
                         onClick={() => handleToggleStatus(user)}
-                        title={user.status === 'suspended' ? 'Activate user' : 'Suspend user'}
+                        title={user.status === 'suspended' ? t('users.detail.activate') : t('users.detail.suspend')}
                         style={{
                           display: 'inline-flex',
                           alignItems: 'center',
@@ -714,7 +739,7 @@ const UsersPage: React.FC = () => {
               {filteredUsers.length === 0 && (
                 <tr>
                   <td colSpan={8} style={{ padding: 40, textAlign: 'center', color: '#9CA3AF' }}>
-                    No users found matching your filters.
+                    {t('users.noUsers')}
                   </td>
                 </tr>
               )}

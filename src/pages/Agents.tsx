@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Users, DollarSign, TrendingUp, ArrowDownUp, Eye, Search } from 'lucide-react';
 import api from '../services/api';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface AgentInfo {
   user: any;
@@ -10,6 +11,7 @@ interface AgentInfo {
 }
 
 const Agents: React.FC = () => {
+  const { t } = useLanguage();
   const [agents, setAgents] = useState<AgentInfo[]>([]);
   const [selectedAgent, setSelectedAgent] = useState<any>(null);
   const [search, setSearch] = useState('');
@@ -36,7 +38,7 @@ const Agents: React.FC = () => {
     return (
       <div>
         <button onClick={() => setSelectedAgent(null)} style={{ background: 'none', border: '1px solid #ddd', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 6 }}>
-          ← Back to Agents
+          ← {t('agents.title')}
         </button>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
           <div style={{ width: 56, height: 56, borderRadius: '50%', background: '#FF9800', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 22, fontWeight: 700 }}>
@@ -50,17 +52,17 @@ const Agents: React.FC = () => {
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
-          <StatCard label="Cash Float" value={`${(a.float?.cash_balance || 0).toLocaleString()} CDF`} color="#1B3A5C" />
-          <StatCard label="E-Money Float" value={`${(a.float?.emoney_balance || 0).toLocaleString()} CDF`} color="#00B4D8" />
-          <StatCard label="Total Commission" value={`${(a.total_commission || 0).toLocaleString()} CDF`} color="#43A047" />
-          <StatCard label="Total Transactions" value={`${a.transactions?.length || 0}`} color="#FF9800" />
+          <StatCard label={t('agents.cashFloat')} value={`${(a.float?.cash_balance || 0).toLocaleString()} CDF`} color="#1B3A5C" />
+          <StatCard label={t('agents.columns.eMoneyFloat')} value={`${(a.float?.emoney_balance || 0).toLocaleString()} CDF`} color="#00B4D8" />
+          <StatCard label={t('agents.totalCommission')} value={`${(a.total_commission || 0).toLocaleString()} CDF`} color="#43A047" />
+          <StatCard label={t('dashboard.totalTransactions')} value={`${a.transactions?.length || 0}`} color="#FF9800" />
         </div>
 
         <div style={{ background: '#fff', borderRadius: 12, padding: 20, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
-          <h3 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 700 }}>Recent Agent Transactions</h3>
+          <h3 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 700 }}>{t('agents.recentTx')}</h3>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead><tr style={{ borderBottom: '2px solid #f0f0f0' }}>
-              <th style={th}>Type</th><th style={th}>Amount</th><th style={th}>Currency</th><th style={th}>Fee</th><th style={th}>Status</th><th style={th}>Date</th>
+              <th style={th}>{t('common.type')}</th><th style={th}>{t('common.amount')}</th><th style={th}>{t('common.currency')}</th><th style={th}>{t('transactions.columns.fee')}</th><th style={th}>{t('common.status')}</th><th style={th}>{t('common.date')}</th>
             </tr></thead>
             <tbody>
               {(a.transactions || []).slice(0, 20).map((t: any, i: number) => (
@@ -78,10 +80,10 @@ const Agents: React.FC = () => {
         </div>
 
         <div style={{ background: '#fff', borderRadius: 12, padding: 20, marginTop: 16, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
-          <h3 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 700 }}>Commission History</h3>
+          <h3 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 700 }}>{t('agents.commissionHistory')}</h3>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead><tr style={{ borderBottom: '2px solid #f0f0f0' }}>
-              <th style={th}>Type</th><th style={th}>Amount</th><th style={th}>Transaction ID</th><th style={th}>Date</th>
+              <th style={th}>{t('common.type')}</th><th style={th}>{t('common.amount')}</th><th style={th}>Transaction ID</th><th style={th}>{t('common.date')}</th>
             </tr></thead>
             <tbody>
               {(a.commissions || []).slice(0, 20).map((cm: any, i: number) => (
@@ -102,27 +104,27 @@ const Agents: React.FC = () => {
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700 }}>Agent Management</h1>
+        <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700 }}>{t('agents.title')}</h1>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
-        <StatCard label="Total Agents" value={`${agents.length}`} color="#FF9800" icon={<Users size={20} />} />
-        <StatCard label="Total Commissions" value={`${agents.reduce((s, a) => s + a.total_commission, 0).toLocaleString()} CDF`} color="#43A047" icon={<DollarSign size={20} />} />
-        <StatCard label="Today's Transactions" value={`${agents.reduce((s, a) => s + a.today_txn_count, 0)}`} color="#1B3A5C" icon={<TrendingUp size={20} />} />
-        <StatCard label="Active Float" value={`${agents.reduce((s, a) => s + (a.float?.cash_balance || 0) + (a.float?.emoney_balance || 0), 0).toLocaleString()} CDF`} color="#00B4D8" icon={<ArrowDownUp size={20} />} />
+        <StatCard label={t('agents.totalAgents')} value={`${agents.length}`} color="#FF9800" icon={<Users size={20} />} />
+        <StatCard label={t('agents.totalCommissions')} value={`${agents.reduce((s, a) => s + a.total_commission, 0).toLocaleString()} CDF`} color="#43A047" icon={<DollarSign size={20} />} />
+        <StatCard label={t('agents.todayTx')} value={`${agents.reduce((s, a) => s + a.today_txn_count, 0)}`} color="#1B3A5C" icon={<TrendingUp size={20} />} />
+        <StatCard label={t('agents.activeFloat')} value={`${agents.reduce((s, a) => s + (a.float?.cash_balance || 0) + (a.float?.emoney_balance || 0), 0).toLocaleString()} CDF`} color="#00B4D8" icon={<ArrowDownUp size={20} />} />
       </div>
 
       <div style={{ background: '#fff', borderRadius: 12, padding: 20, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
         <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
           <div style={{ position: 'relative', flex: 1 }}>
             <Search size={16} style={{ position: 'absolute', left: 12, top: 10, color: '#999' }} />
-            <input placeholder="Search agents..." value={search} onChange={e => setSearch(e.target.value)} style={{ width: '100%', padding: '8px 12px 8px 36px', border: '1px solid #e0e0e0', borderRadius: 8, fontSize: 14 }} />
+            <input placeholder={t('agents.searchPlaceholder')} value={search} onChange={e => setSearch(e.target.value)} style={{ width: '100%', padding: '8px 12px 8px 36px', border: '1px solid #e0e0e0', borderRadius: 8, fontSize: 14 }} />
           </div>
         </div>
 
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead><tr style={{ borderBottom: '2px solid #f0f0f0' }}>
-            <th style={th}>Agent</th><th style={th}>Phone</th><th style={th}>Country</th><th style={th}>Cash Float</th><th style={th}>E-Money Float</th><th style={th}>Commission</th><th style={th}>Today Txns</th><th style={th}>Actions</th>
+            <th style={th}>{t('agents.columns.agent')}</th><th style={th}>{t('agents.columns.phone')}</th><th style={th}>{t('agents.columns.country')}</th><th style={th}>{t('agents.columns.cashFloat')}</th><th style={th}>{t('agents.columns.eMoneyFloat')}</th><th style={th}>{t('agents.columns.commission')}</th><th style={th}>{t('agents.columns.todayTxns')}</th><th style={th}>{t('agents.columns.actions')}</th>
           </tr></thead>
           <tbody>
             {filtered.map((a, i) => (
@@ -141,12 +143,12 @@ const Agents: React.FC = () => {
                 <td style={td}>{a.today_txn_count}</td>
                 <td style={td}>
                   <button onClick={() => viewAgent(a.user.id)} style={{ background: '#f0f7ff', border: 'none', borderRadius: 6, padding: '6px 12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#1B3A5C' }}>
-                    <Eye size={14} /> View
+                    <Eye size={14} /> {t('common.view')}
                   </button>
                 </td>
               </tr>
             ))}
-            {filtered.length === 0 && <tr><td colSpan={8} style={{ textAlign: 'center', padding: 40, color: '#999' }}>No agents found</td></tr>}
+            {filtered.length === 0 && <tr><td colSpan={8} style={{ textAlign: 'center', padding: 40, color: '#999' }}>{t('agents.noAgents')}</td></tr>}
           </tbody>
         </table>
       </div>

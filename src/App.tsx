@@ -1,5 +1,6 @@
 import React, { useState, createContext, useContext } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { LanguageProvider } from './contexts/LanguageContext';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import Analytics from './pages/Analytics';
@@ -52,16 +53,19 @@ function App() {
 
   if (!isAuthenticated) {
     return (
-      <ToastProvider>
-        <BrowserRouter>
-          <Login onLogin={handleLogin} />
-        </BrowserRouter>
-      </ToastProvider>
+      <LanguageProvider>
+        <ToastProvider>
+          <BrowserRouter>
+            <Login onLogin={handleLogin} />
+          </BrowserRouter>
+        </ToastProvider>
+      </LanguageProvider>
     );
   }
 
   return (
-    <ToastProvider>
+    <LanguageProvider>
+      <ToastProvider>
       <AuthContext.Provider value={{ logout: handleLogout }}>
         <BrowserRouter>
           <Routes>
@@ -94,7 +98,8 @@ function App() {
           </Routes>
         </BrowserRouter>
       </AuthContext.Provider>
-    </ToastProvider>
+      </ToastProvider>
+    </LanguageProvider>
   );
 }
 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { FileText, Search, Filter, Shield, UserCog, Settings, ArrowLeftRight, Eye } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const NAVY = '#1B3A5C';
 const GREEN = '#43A047';
@@ -57,6 +58,7 @@ const severityColors: Record<AuditEntry['severity'], { bg: string; color: string
 };
 
 export default function AuditLog() {
+  const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<'all' | AuditEntry['category']>('all');
   const [severityFilter, setSeverityFilter] = useState<'all' | AuditEntry['severity']>('all');
@@ -72,17 +74,17 @@ export default function AuditLog() {
   });
 
   const stats = [
-    { label: 'Total Entries', value: auditLogs.length, icon: <FileText size={22} color="#fff" />, bg: NAVY },
-    { label: 'Today', value: auditLogs.filter(l => l.timestamp.startsWith('2026-04-11')).length, icon: <Filter size={22} color="#fff" />, bg: GREEN },
-    { label: 'Warnings', value: auditLogs.filter(l => l.severity === 'warning').length, icon: <Shield size={22} color="#fff" />, bg: '#E65100' },
-    { label: 'Critical', value: auditLogs.filter(l => l.severity === 'critical').length, icon: <Shield size={22} color="#fff" />, bg: '#C62828' },
+    { label: t('auditLog.totalEntries'), value: auditLogs.length, icon: <FileText size={22} color="#fff" />, bg: NAVY },
+    { label: t('auditLog.today'), value: auditLogs.filter(l => l.timestamp.startsWith('2026-04-11')).length, icon: <Filter size={22} color="#fff" />, bg: GREEN },
+    { label: t('auditLog.warnings'), value: auditLogs.filter(l => l.severity === 'warning').length, icon: <Shield size={22} color="#fff" />, bg: '#E65100' },
+    { label: t('auditLog.critical'), value: auditLogs.filter(l => l.severity === 'critical').length, icon: <Shield size={22} color="#fff" />, bg: '#C62828' },
   ];
 
   return (
     <div style={{ fontFamily: FONT, padding: 32, minHeight: '100vh' }}>
       <div style={{ marginBottom: 28 }}>
-        <h1 style={{ margin: 0, fontSize: 28, fontWeight: 700, color: NAVY }}>Audit Log</h1>
-        <p style={{ margin: '4px 0 0', fontSize: 14, color: '#6B7280' }}>Track all administrative actions and system events</p>
+        <h1 style={{ margin: 0, fontSize: 28, fontWeight: 700, color: NAVY }}>{t('auditLog.title')}</h1>
+        <p style={{ margin: '4px 0 0', fontSize: 14, color: '#6B7280' }}>{t('auditLog.subtitle')}</p>
       </div>
 
       {/* Stat Cards */}
@@ -113,7 +115,7 @@ export default function AuditLog() {
         <div style={{ position: 'relative', flex: 1 }}>
           <Search size={18} color="#9CA3AF" style={{ position: 'absolute', left: 12, top: 10 }} />
           <input
-            type="text" placeholder="Search actions, admins, details..."
+            type="text" placeholder={t('auditLog.searchPlaceholder')}
             value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
             style={{
               width: '100%', padding: '10px 12px 10px 40px', border: '1px solid #E5E7EB',
@@ -128,7 +130,7 @@ export default function AuditLog() {
             fontFamily: FONT, color: '#1F2937', backgroundColor: '#fff', cursor: 'pointer',
             outline: 'none', minWidth: 150,
           }}>
-          <option value="all">All Categories</option>
+          <option value="all">{t('auditLog.filterCategory')}</option>
           <option value="auth">Auth</option>
           <option value="user">User</option>
           <option value="transaction">Transaction</option>
@@ -142,7 +144,7 @@ export default function AuditLog() {
             fontFamily: FONT, color: '#1F2937', backgroundColor: '#fff', cursor: 'pointer',
             outline: 'none', minWidth: 150,
           }}>
-          <option value="all">All Severity</option>
+          <option value="all">{t('auditLog.filterSeverity')}</option>
           <option value="info">Info</option>
           <option value="warning">Warning</option>
           <option value="critical">Critical</option>
@@ -155,7 +157,7 @@ export default function AuditLog() {
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
             <thead>
               <tr style={{ backgroundColor: '#F9FAFB', borderBottom: '1px solid #E5E7EB' }}>
-                {['Timestamp', 'Admin', 'Action', 'Category', 'Details', 'IP Address', 'Severity'].map(h => (
+                {[t('auditLog.columns.timestamp'), t('auditLog.columns.admin'), t('auditLog.columns.action'), t('auditLog.columns.category'), t('auditLog.columns.details'), t('auditLog.columns.ip'), t('auditLog.columns.severity')].map(h => (
                   <th key={h} style={{
                     padding: '12px 16px', textAlign: 'left', fontWeight: 600, color: '#6B7280',
                     fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5, whiteSpace: 'nowrap',

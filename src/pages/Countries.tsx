@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Search, ToggleLeft, ToggleRight } from 'lucide-react';
 import { countries as initialCountries, Country } from '../data/mockData';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const s = {
   page: { padding: 32, fontFamily: 'Inter, sans-serif' } as React.CSSProperties,
@@ -23,6 +24,7 @@ const s = {
 };
 
 export default function Countries() {
+  const { t } = useLanguage();
   const [countryList, setCountryList] = useState<Country[]>(initialCountries);
   const [search, setSearch] = useState('');
 
@@ -42,33 +44,33 @@ export default function Countries() {
   return (
     <div style={s.page}>
       <div style={s.header}>
-        <h1 style={s.title}>Countries</h1>
-        <p style={s.subtitle}>Manage supported countries and mobile money providers</p>
+        <h1 style={s.title}>{t('countries.title')}</h1>
+        <p style={s.subtitle}>{t('countries.subtitle')}</p>
       </div>
 
       <div style={s.statsRow}>
-        <div style={s.statCard}><div style={s.statLabel}>Total Countries</div><div style={s.statValue}>{countryList.length}</div></div>
-        <div style={s.statCard}><div style={s.statLabel}>Active</div><div style={s.statValue}>{active}</div></div>
-        <div style={s.statCard}><div style={s.statLabel}>Registration Allowed</div><div style={s.statValue}>{regAllowed}</div></div>
-        <div style={s.statCard}><div style={s.statLabel}>Send Allowed</div><div style={s.statValue}>{sendAllowed}</div></div>
+        <div style={s.statCard}><div style={s.statLabel}>{t('countries.totalCountries')}</div><div style={s.statValue}>{countryList.length}</div></div>
+        <div style={s.statCard}><div style={s.statLabel}>{t('countries.active')}</div><div style={s.statValue}>{active}</div></div>
+        <div style={s.statCard}><div style={s.statLabel}>{t('countries.registrationAllowed')}</div><div style={s.statValue}>{regAllowed}</div></div>
+        <div style={s.statCard}><div style={s.statLabel}>{t('countries.sendAllowed')}</div><div style={s.statValue}>{sendAllowed}</div></div>
       </div>
 
       <div style={s.toolbar}>
         <div style={s.searchBox}>
           <Search size={16} color="#7C8D9E" />
-          <input style={s.searchInput} placeholder="Search country..." value={search} onChange={e => setSearch(e.target.value)} />
+          <input style={s.searchInput} placeholder={t('countries.searchPlaceholder')} value={search} onChange={e => setSearch(e.target.value)} />
         </div>
       </div>
 
       <table style={s.table}>
         <thead>
           <tr>
-            <th style={s.th}>Country</th>
-            <th style={s.th}>Dial Code</th>
-            <th style={s.th}>Mobile Money Providers</th>
-            <th style={s.th}>Status</th>
-            <th style={s.th}>Registration</th>
-            <th style={s.th}>Send Money</th>
+            <th style={s.th}>{t('countries.columns.country')}</th>
+            <th style={s.th}>{t('countries.columns.dialCode')}</th>
+            <th style={s.th}>{t('countries.columns.mobileMoneyProviders')}</th>
+            <th style={s.th}>{t('countries.columns.status')}</th>
+            <th style={s.th}>{t('countries.columns.registration')}</th>
+            <th style={s.th}>{t('countries.columns.sendMoney')}</th>
           </tr>
         </thead>
         <tbody>
@@ -92,19 +94,19 @@ export default function Countries() {
               <td style={s.td}>
                 <div style={s.toggle(c.status === 'active')} onClick={() => toggleField(c.code, 'status')}>
                   {c.status === 'active' ? <ToggleRight size={20} /> : <ToggleLeft size={20} />}
-                  {c.status === 'active' ? 'Active' : 'Disabled'}
+                  {c.status === 'active' ? t('common.active') : t('common.disabled')}
                 </div>
               </td>
               <td style={s.td}>
                 <div style={s.toggle(c.registrationAllowed)} onClick={() => toggleField(c.code, 'registrationAllowed')}>
                   {c.registrationAllowed ? <ToggleRight size={20} /> : <ToggleLeft size={20} />}
-                  {c.registrationAllowed ? 'Allowed' : 'Blocked'}
+                  {c.registrationAllowed ? t('countries.allowed') : t('countries.blocked')}
                 </div>
               </td>
               <td style={s.td}>
                 <div style={s.toggle(c.sendAllowed)} onClick={() => toggleField(c.code, 'sendAllowed')}>
                   {c.sendAllowed ? <ToggleRight size={20} /> : <ToggleLeft size={20} />}
-                  {c.sendAllowed ? 'Allowed' : 'Blocked'}
+                  {c.sendAllowed ? t('countries.allowed') : t('countries.blocked')}
                 </div>
               </td>
             </tr>

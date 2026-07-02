@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AlertTriangle, RefreshCw, CheckCircle, XCircle, Clock } from 'lucide-react';
 import api from '../services/api';
+import { useLanguage } from '../contexts/LanguageContext';
 
 type Tab = 'flagged' | 'callbacks';
 
@@ -22,6 +23,7 @@ function statusBadge(status: string) {
 }
 
 const Compliance: React.FC = () => {
+  const { t } = useLanguage();
   const [tab, setTab] = useState<Tab>('flagged');
   const [transactions, setTransactions] = useState<any[]>([]);
   const [callbacks, setCallbacks] = useState<any[]>([]);
@@ -35,7 +37,6 @@ const Compliance: React.FC = () => {
 
   const loadFlagged = async () => {
     setLoading(true);
-    // Filter for compliance-failed and reversed transactions
     const res = await api.listComplianceTransactions('status=failed_compliance&limit=100');
     setLoading(false);
     if (res.success) setTransactions(res.data?.transactions || res.data || []);
@@ -49,33 +50,34 @@ const Compliance: React.FC = () => {
     if (res.success) setCallbacks(res.data || []);
   };
 
+  const tabs: [Tab, string][] = [
+    ['flagged', t('compliance.flaggedTx')],
+    ['callbacks', t('compliance.callbackLog')],
+  ];
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div>
           <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 10 }}>
-            <AlertTriangle size={22} color="#E65100" /> Compliance & AML
+            <AlertTriangle size={22} color="#E65100" /> {t('compliance.title')}
           </h1>
-          <p style={{ margin: '4px 0 0', color: '#666', fontSize: 14 }}>
-            Flagged transactions, mobile money callback logs, and AML review queue.
-          </p>
         </div>
         <button onClick={() => tab === 'flagged' ? loadFlagged() : loadCallbacks()} style={btnStyle('#1B3A5C')}>
-          <RefreshCw size={15} /> Refresh
+          <RefreshCw size={15} /> {t('common.refresh')}
         </button>
       </div>
 
-      {/* Tabs */}
       <div style={{ display: 'flex', gap: 4, marginBottom: 20, borderBottom: '2px solid #f0f0f0' }}>
-        {([['flagged', 'Flagged Transactions'], ['callbacks', 'Callback Log']] as [Tab, string][]).map(([t, label]) => (
+        {tabs.map(([tabKey, label]) => (
           <button
-            key={t}
-            onClick={() => setTab(t)}
+            key={tabKey}
+            onClick={() => setTab(tabKey)}
             style={{
               background: 'none', border: 'none', padding: '10px 20px', cursor: 'pointer',
               fontWeight: 600, fontSize: 14,
-              color: tab === t ? '#1B3A5C' : '#999',
-              borderBottom: tab === t ? '2px solid #1B3A5C' : '2px solid transparent',
+              color: tab === tabKey ? '#1B3A5C' : '#999',
+              borderBottom: tab === tabKey ? '2px solid #1B3A5C' : '2px solid transparent',
               marginBottom: -2,
             }}
           >
@@ -84,43 +86,43 @@ const Compliance: React.FC = () => {
         ))}
       </div>
 
-      {loading && <p style={{ color: '#999', textAlign: 'center', padding: 40 }}>Loading…</p>}
+      {loading && <p style={{ color: '#999', textAlign: 'center', padding: 40 }}>{t('common.loading')}</p>}
 
       {!loading && tab === 'flagged' && (
         <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', overflow: 'hidden' }}>
           <div style={{ padding: '14px 18px', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', gap: 8 }}>
             <AlertTriangle size={16} color="#E65100" />
-            <strong style={{ fontSize: 14 }}>Compliance-Failed Remittances</strong>
+            <strong style={{ fontSize: 14 }}>{t('compliance.failedRemittances')}</strong>
             <span style={{ marginLeft: 'auto', fontSize: 12, color: '#999' }}>{transactions.length} records</span>
           </div>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid #f0f0f0', background: '#fafafa' }}>
-                <th style={th}>ID</th>
-                <th style={th}>Sender</th>
-                <th style={th}>Amount (XAF)</th>
-                <th style={th}>Destination</th>
-                <th style={th}>Channel</th>
-                <th style={th}>Status</th>
-                <th style={th}>Date</th>
+                <th style={th}>{t('common.id')}</th>
+                <th style={th}>{t('compliance.columns.sender')}</th>
+                <th style={th}>{t('compliance.columns.amount')}</th>
+                <th style={th}>{t('compliance.columns.destination')}</th>
+                <th style={th}>{t('compliance.columns.channel')}</th>
+                <th style={th}>{t('compliance.columns.status')}</th>
+                <th style={th}>{t('compliance.columns.date')}</th>
               </tr>
             </thead>
             <tbody>
-              {transactions.map((t: any) => (
-                <tr key={t.id} style={{ borderBottom: '1px solid #f5f5f5' }}>
-                  <td style={td}>#{t.id}</td>
-                  <td style={td}>{t.sender_phone || t.created_by_user_id}</td>
-                  <td style={td}>{t.amount?.toLocaleString()}</td>
-                  <td style={td}>{t.destination_country || '—'}</td>
-                  <td style={td}>{t.funding_source_type}</td>
-                  <td style={td}>{statusBadge(t.status)}</td>
-                  <td style={td}>{t.created_at?.slice(0, 16)}</td>
+              {transactions.map((tx: any) => (
+                <tr key={tx.id} style={{ borderBottom: '1px solid #f5f5f5' }}>
+                  <td style={td}>#{tx.id}</td>
+                  <td style={td}>{tx.sender_phone || tx.created_by_user_id}</td>
+                  <td style={td}>{tx.amount?.toLocaleString()}</td>
+                  <td style={td}>{tx.destination_country || '—'}</td>
+                  <td style={td}>{tx.funding_source_type}</td>
+                  <td style={td}>{statusBadge(tx.status)}</td>
+                  <td style={td}>{tx.created_at?.slice(0, 16)}</td>
                 </tr>
               ))}
               {transactions.length === 0 && (
                 <tr><td colSpan={7} style={{ padding: 40, textAlign: 'center', color: '#999' }}>
                   <CheckCircle size={24} color="#43A047" style={{ display: 'block', margin: '0 auto 8px' }} />
-                  No compliance-flagged transactions.
+                  {t('compliance.noCallbacks')}
                 </td></tr>
               )}
             </tbody>
@@ -142,7 +144,7 @@ const Compliance: React.FC = () => {
                   fontWeight: 600, fontSize: 12, cursor: 'pointer',
                 }}
               >
-                {p === '' ? 'All' : p.toUpperCase()}
+                {p === '' ? t('common.all') : p.toUpperCase()}
               </button>
             ))}
           </div>
@@ -151,13 +153,13 @@ const Compliance: React.FC = () => {
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid #f0f0f0', background: '#fafafa' }}>
-                  <th style={th}>ID</th>
-                  <th style={th}>Provider</th>
-                  <th style={th}>External Ref</th>
-                  <th style={th}>Remittance #</th>
-                  <th style={th}>Status</th>
-                  <th style={th}>Signature</th>
-                  <th style={th}>Processed At</th>
+                  <th style={th}>{t('common.id')}</th>
+                  <th style={th}>{t('compliance.columns.provider')}</th>
+                  <th style={th}>{t('compliance.columns.externalRef')}</th>
+                  <th style={th}>{t('compliance.columns.remittanceNo')}</th>
+                  <th style={th}>{t('compliance.columns.status')}</th>
+                  <th style={th}>{t('compliance.columns.signature')}</th>
+                  <th style={th}>{t('compliance.columns.processedAt')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -181,7 +183,7 @@ const Compliance: React.FC = () => {
                   </tr>
                 ))}
                 {callbacks.length === 0 && (
-                  <tr><td colSpan={7} style={{ padding: 40, textAlign: 'center', color: '#999' }}>No callbacks received yet.</td></tr>
+                  <tr><td colSpan={7} style={{ padding: 40, textAlign: 'center', color: '#999' }}>{t('compliance.noCallbacks')}</td></tr>
                 )}
               </tbody>
             </table>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { DollarSign, Edit2, Save, Plus, X } from 'lucide-react';
 import { feeConfigs as initialFees, FeeConfig } from '../data/mockData';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const emptyFee: Omit<FeeConfig, 'id'> = {
   service: '',
@@ -13,6 +14,7 @@ const emptyFee: Omit<FeeConfig, 'id'> = {
 };
 
 const FeesCharges: React.FC = () => {
+  const { t } = useLanguage();
   const [fees, setFees] = useState<FeeConfig[]>(initialFees.map((f) => ({ ...f })));
   const [editingId, setEditingId] = useState<string | null>(null);
   const [tempValue, setTempValue] = useState<number>(0);
@@ -276,8 +278,8 @@ const FeesCharges: React.FC = () => {
     <div style={styles.page}>
       <div style={styles.header}>
         <div>
-          <h1 style={styles.title}>Fees & Charges</h1>
-          <p style={styles.subtitle}>Configure service fees and pricing</p>
+          <h1 style={styles.title}>{t('fees.title')}</h1>
+          <p style={styles.subtitle}>{t('fees.subtitle')}</p>
         </div>
         <button
           style={styles.addBtn}
@@ -287,26 +289,26 @@ const FeesCharges: React.FC = () => {
           }}
         >
           <Plus size={16} />
-          Add New Fee
+          {t('fees.addNewFee')}
         </button>
       </div>
 
       <div style={styles.card}>
         <div style={styles.cardHeader}>
           <DollarSign size={18} color="#1B3A5C" />
-          <span style={styles.cardTitle}>Fee Configurations</span>
+          <span style={styles.cardTitle}>{t('fees.feeConfigurations')}</span>
         </div>
         <table style={styles.table}>
           <thead>
             <tr>
-              <th style={styles.th}>Service</th>
-              <th style={styles.th}>Type</th>
-              <th style={styles.th}>Value</th>
-              <th style={styles.th}>Min Fee</th>
-              <th style={styles.th}>Max Fee</th>
-              <th style={styles.th}>Currency</th>
-              <th style={styles.th}>Enabled</th>
-              <th style={styles.th}>Actions</th>
+              <th style={styles.th}>{t('fees.columns.service')}</th>
+              <th style={styles.th}>{t('fees.columns.type')}</th>
+              <th style={styles.th}>{t('fees.columns.value')}</th>
+              <th style={styles.th}>{t('fees.columns.minFee')}</th>
+              <th style={styles.th}>{t('fees.columns.maxFee')}</th>
+              <th style={styles.th}>{t('fees.columns.currency')}</th>
+              <th style={styles.th}>{t('fees.columns.enabled')}</th>
+              <th style={styles.th}>{t('fees.columns.actions')}</th>
             </tr>
           </thead>
           <tbody>
@@ -316,7 +318,7 @@ const FeesCharges: React.FC = () => {
                   <input
                     style={styles.inputWide}
                     type="text"
-                    placeholder="Service name"
+                    placeholder={t('fees.servicePlaceholder')}
                     value={newFee.service}
                     onChange={(e) => setNewFee({ ...newFee, service: e.target.value })}
                   />
@@ -329,9 +331,9 @@ const FeesCharges: React.FC = () => {
                       setNewFee({ ...newFee, type: e.target.value as FeeConfig['type'] })
                     }
                   >
-                    <option value="percentage">Percentage</option>
-                    <option value="flat">Flat</option>
-                    <option value="tiered">Tiered</option>
+                    <option value="percentage">{t('fees.types.percentage')}</option>
+                    <option value="flat">{t('fees.types.flat')}</option>
+                    <option value="tiered">{t('fees.types.tiered')}</option>
                   </select>
                 </td>
                 <td style={styles.td}>
@@ -388,11 +390,11 @@ const FeesCharges: React.FC = () => {
                 <td style={styles.td}>
                   <button style={styles.btnConfirmAdd} onClick={handleAddFee}>
                     <Plus size={14} />
-                    Add
+                    {t('fees.addFee')}
                   </button>
                   <button style={styles.btnCancel} onClick={() => setShowNewForm(false)}>
                     <X size={14} />
-                    Cancel
+                    {t('common.cancel')}
                   </button>
                 </td>
               </tr>
@@ -404,7 +406,7 @@ const FeesCharges: React.FC = () => {
                   <td style={{ ...styles.td, fontWeight: 500 }}>{f.service}</td>
                   <td style={styles.td}>
                     <span style={typeBadgeColor(f.type)}>
-                      {f.type.charAt(0).toUpperCase() + f.type.slice(1)}
+                      {f.type === 'percentage' ? t('fees.types.percentage') : f.type === 'flat' ? t('fees.types.flat') : t('fees.types.tiered')}
                     </span>
                   </td>
                   <td style={styles.td}>
@@ -472,12 +474,12 @@ const FeesCharges: React.FC = () => {
                     {isEditing ? (
                       <button style={styles.btnSave} onClick={() => handleSave(f.id)}>
                         <Save size={14} />
-                        Save
+                        {t('common.save')}
                       </button>
                     ) : (
                       <button style={styles.btnEdit} onClick={() => handleEdit(f)}>
                         <Edit2 size={14} />
-                        Edit
+                        {t('common.edit')}
                       </button>
                     )}
                   </td>
@@ -489,7 +491,7 @@ const FeesCharges: React.FC = () => {
       </div>
 
       <div style={styles.summary}>
-        <strong>Total active fee configurations:</strong> {activeCount}
+        <strong>{t('fees.totalActive')}</strong> {activeCount}
       </div>
     </div>
   );

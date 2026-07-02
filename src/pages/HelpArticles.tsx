@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { BookOpen, Plus, Pencil, Trash2, Save, X } from 'lucide-react';
 import api from '../services/api';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const HelpArticles: React.FC = () => {
+  const { t } = useLanguage();
   const [articles, setArticles] = useState<any[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [showAdd, setShowAdd] = useState(false);
@@ -30,7 +32,7 @@ const HelpArticles: React.FC = () => {
   };
 
   const deleteArticle = async (id: number) => {
-    if (window.confirm('Delete this article?')) {
+    if (window.confirm(t('helpArticles.deleteConfirm'))) {
       await api.deleteHelpArticle(id);
       load();
     }
@@ -41,30 +43,30 @@ const HelpArticles: React.FC = () => {
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700 }}>Help Articles & FAQs</h1>
+        <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700 }}>{t('helpArticles.title')}</h1>
         <button onClick={() => setShowAdd(!showAdd)} style={{ background: '#1B3A5C', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 14 }}>
-          <Plus size={16} /> Add Article
+          <Plus size={16} /> {t('helpArticles.addArticle')}
         </button>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 24 }}>
-        <StatCard label="Total Articles" value={articles.length} color="#1B3A5C" icon={<BookOpen size={20} />} />
-        <StatCard label="Categories" value={categories.length} color="#43A047" />
-        <StatCard label="Most Articles" value={categories.sort((a, b) => articles.filter(x => x.category === b).length - articles.filter(x => x.category === a).length)[0] || '-'} color="#FF9800" />
+        <StatCard label={t('helpArticles.totalArticles')} value={articles.length} color="#1B3A5C" icon={<BookOpen size={20} />} />
+        <StatCard label={t('helpArticles.categories')} value={categories.length} color="#43A047" />
+        <StatCard label={t('helpArticles.mostArticles')} value={categories.sort((a, b) => articles.filter(x => x.category === b).length - articles.filter(x => x.category === a).length)[0] || '-'} color="#FF9800" />
       </div>
 
       {showAdd && (
         <div style={{ background: '#fff', borderRadius: 12, padding: 20, marginBottom: 16, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
-          <h3 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 700 }}>New Article</h3>
+          <h3 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 700 }}>{t('helpArticles.newArticle')}</h3>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-            <input placeholder="Category" value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} style={input} />
-            <input placeholder="Order" type="number" value={form.order_num} onChange={e => setForm({ ...form, order_num: Number(e.target.value) })} style={input} />
+            <input placeholder={t('helpArticles.categoryPlaceholder')} value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} style={input} />
+            <input placeholder={t('helpArticles.orderPlaceholder')} type="number" value={form.order_num} onChange={e => setForm({ ...form, order_num: Number(e.target.value) })} style={input} />
           </div>
-          <input placeholder="Question" value={form.question} onChange={e => setForm({ ...form, question: e.target.value })} style={{ ...input, marginTop: 12, width: '100%' }} />
-          <textarea placeholder="Answer" value={form.answer} onChange={e => setForm({ ...form, answer: e.target.value })} rows={3} style={{ ...input, marginTop: 12, width: '100%', resize: 'vertical' }} />
+          <input placeholder={t('helpArticles.questionPlaceholder')} value={form.question} onChange={e => setForm({ ...form, question: e.target.value })} style={{ ...input, marginTop: 12, width: '100%' }} />
+          <textarea placeholder={t('helpArticles.answerPlaceholder')} value={form.answer} onChange={e => setForm({ ...form, answer: e.target.value })} rows={3} style={{ ...input, marginTop: 12, width: '100%', resize: 'vertical' }} />
           <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-            <button onClick={addArticle} style={{ background: '#43A047', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}><Save size={14} /> Save</button>
-            <button onClick={() => setShowAdd(false)} style={{ background: '#f5f5f5', border: 'none', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}><X size={14} /> Cancel</button>
+            <button onClick={addArticle} style={{ background: '#43A047', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}><Save size={14} /> {t('helpArticles.saveEdit')}</button>
+            <button onClick={() => setShowAdd(false)} style={{ background: '#f5f5f5', border: 'none', borderRadius: 8, padding: '8px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}><X size={14} /> {t('helpArticles.cancelEdit')}</button>
           </div>
         </div>
       )}
@@ -79,8 +81,8 @@ const HelpArticles: React.FC = () => {
                   <input value={article.question} onChange={e => setArticles(articles.map(a => a.id === article.id ? { ...a, question: e.target.value } : a))} style={{ ...input, width: '100%', marginBottom: 8 }} />
                   <textarea value={article.answer} onChange={e => setArticles(articles.map(a => a.id === article.id ? { ...a, answer: e.target.value } : a))} rows={2} style={{ ...input, width: '100%', resize: 'vertical' }} />
                   <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-                    <button onClick={() => saveEdit(article.id)} style={{ background: '#43A047', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 12px', cursor: 'pointer', fontSize: 12 }}>Save</button>
-                    <button onClick={() => setEditingId(null)} style={{ background: '#f5f5f5', border: 'none', borderRadius: 6, padding: '6px 12px', cursor: 'pointer', fontSize: 12 }}>Cancel</button>
+                    <button onClick={() => saveEdit(article.id)} style={{ background: '#43A047', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 12px', cursor: 'pointer', fontSize: 12 }}>{t('helpArticles.saveEdit')}</button>
+                    <button onClick={() => setEditingId(null)} style={{ background: '#f5f5f5', border: 'none', borderRadius: 6, padding: '6px 12px', cursor: 'pointer', fontSize: 12 }}>{t('helpArticles.cancelEdit')}</button>
                   </div>
                 </div>
               ) : (
@@ -99,7 +101,7 @@ const HelpArticles: React.FC = () => {
           ))}
         </div>
       ))}
-      {articles.length === 0 && <div style={{ background: '#fff', borderRadius: 12, padding: 40, textAlign: 'center', color: '#999' }}>No help articles yet. Click "Add Article" to create one.</div>}
+      {articles.length === 0 && <div style={{ background: '#fff', borderRadius: 12, padding: 40, textAlign: 'center', color: '#999' }}>{t('helpArticles.noArticles')}</div>}
     </div>
   );
 };

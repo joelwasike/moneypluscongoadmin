@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, ToggleLeft, ToggleRight, Trash2, Store, Search } from 'lucide-react';
 import api from '../services/api';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface Agency {
   id: number;
@@ -31,6 +32,7 @@ const emptyForm = (): Partial<Agency> => ({
 });
 
 const Agencies: React.FC = () => {
+  const { t } = useLanguage();
   const [agencies, setAgencies] = useState<Agency[]>([]);
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
@@ -63,7 +65,7 @@ const Agencies: React.FC = () => {
 
   const handleSave = async () => {
     if (!form.name || !form.city) {
-      setError('Name and city are required.');
+      setError(t('agencies.nameRequired'));
       return;
     }
     setSaving(true);
@@ -76,7 +78,7 @@ const Agencies: React.FC = () => {
       setShowForm(false);
       load();
     } else {
-      setError(res.message || 'Failed to save');
+      setError(res.message || t('agencies.failedToSave'));
     }
   };
 
@@ -107,14 +109,14 @@ const Agencies: React.FC = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div>
           <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Store size={22} /> Agency Network
+            <Store size={22} /> {t('agencies.title')}
           </h1>
           <p style={{ margin: '4px 0 0', color: '#666', fontSize: 14 }}>
             {agencies.length} total · {activeCount} active cash-in/cash-out points
           </p>
         </div>
         <button onClick={openCreate} style={btnStyle('#1B3A5C')}>
-          <Plus size={16} /> Add Agency
+          <Plus size={16} /> {t('agencies.newAgency')}
         </button>
       </div>
 
@@ -124,7 +126,7 @@ const Agencies: React.FC = () => {
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="Search by name, city or code…"
+            placeholder={t('agencies.searchPlaceholder')}
             style={{ width: '100%', padding: '9px 12px 9px 36px', border: '1px solid #ddd', borderRadius: 8, fontSize: 13, boxSizing: 'border-box' }}
           />
         </div>
@@ -134,36 +136,36 @@ const Agencies: React.FC = () => {
         <div style={modalOverlay}>
           <div style={modalStyle}>
             <h3 style={{ margin: '0 0 20px', fontSize: 17, fontWeight: 700 }}>
-              {editing ? `Edit – ${editing.name}` : 'New Agency'}
+              {editing ? `${t('agencies.editAgency')} – ${editing.name}` : t('agencies.newAgency')}
             </h3>
 
             <div style={grid2}>
               <div>
-                <label style={labelStyle}>Type</label>
+                <label style={labelStyle}>{t('agencies.fields.type')}</label>
                 <select value={f('type') as string} onChange={e => set('type', e.target.value)} style={inputStyle}>
-                  <option value="agency">Agency</option>
-                  <option value="partner_branch">Partner Branch</option>
-                  <option value="mobile_agent">Mobile Agent</option>
+                  <option value="agency">{t('agencies.types.agency')}</option>
+                  <option value="partner_branch">{t('agencies.types.partner_branch')}</option>
+                  <option value="mobile_agent">{t('agencies.types.mobile_agent')}</option>
                 </select>
               </div>
-              <Field label="Name" value={f('name') as string} onChange={v => set('name', v)} placeholder="MoneyPlus Brazzaville Nord" />
-              <Field label="City" value={f('city') as string} onChange={v => set('city', v)} placeholder="Brazzaville" />
-              <Field label="Address" value={f('address') as string} onChange={v => set('address', v)} placeholder="Av. de l'Indépendance" />
-              <Field label="Manager Name" value={f('manager_name') as string} onChange={v => set('manager_name', v)} placeholder="Jean Mbemba" />
-              <Field label="Manager Phone" value={f('manager_phone') as string} onChange={v => set('manager_phone', v)} placeholder="+242 06 123 4567" />
-              <Field label="Cash Limit (XAF)" value={f('cash_limit') as number} onChange={v => set('cash_limit', parseFloat(v) || 0)} type="number" />
-              <Field label="Opening Hours" value={f('opening_hours') as string} onChange={v => set('opening_hours', v)} placeholder="08:00-18:00" />
+              <Field label={t('agencies.fields.name')} value={f('name') as string} onChange={v => set('name', v)} placeholder="MoneyPlus Brazzaville Nord" />
+              <Field label={t('agencies.fields.city')} value={f('city') as string} onChange={v => set('city', v)} placeholder="Brazzaville" />
+              <Field label={t('agencies.fields.address')} value={f('address') as string} onChange={v => set('address', v)} placeholder="Av. de l'Indépendance" />
+              <Field label={t('agencies.fields.managerName')} value={f('manager_name') as string} onChange={v => set('manager_name', v)} placeholder="Jean Mbemba" />
+              <Field label={t('agencies.fields.managerPhone')} value={f('manager_phone') as string} onChange={v => set('manager_phone', v)} placeholder="+242 06 123 4567" />
+              <Field label={t('agencies.fields.cashLimit')} value={f('cash_limit') as number} onChange={v => set('cash_limit', parseFloat(v) || 0)} type="number" />
+              <Field label={t('agencies.fields.openingHours')} value={f('opening_hours') as string} onChange={v => set('opening_hours', v)} placeholder="08:00-18:00" />
               <Field label="GPS Lat" value={f('gps_lat') as number} onChange={v => set('gps_lat', parseFloat(v) || 0)} type="number" placeholder="-4.2634" />
               <Field label="GPS Lng" value={f('gps_lng') as number} onChange={v => set('gps_lng', parseFloat(v) || 0)} type="number" placeholder="15.2429" />
-              <Field label="Agent User ID (optional)" value={f('agent_user_id') as number} onChange={v => set('agent_user_id', parseInt(v) || 0)} type="number" />
+              <Field label={t('agencies.fields.agentUserId')} value={f('agent_user_id') as number} onChange={v => set('agent_user_id', parseInt(v) || 0)} type="number" />
             </div>
 
             {error && <p style={{ color: '#c62828', fontSize: 13, margin: '12px 0 0' }}>{error}</p>}
 
             <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 20 }}>
-              <button onClick={() => setShowForm(false)} style={btnStyle('#888')}>Cancel</button>
+              <button onClick={() => setShowForm(false)} style={btnStyle('#888')}>{t('common.cancel')}</button>
               <button onClick={handleSave} disabled={saving} style={btnStyle('#43A047')}>
-                {saving ? 'Saving…' : 'Save'}
+                {saving ? t('common.saving') : t('common.save')}
               </button>
             </div>
           </div>
@@ -174,15 +176,15 @@ const Agencies: React.FC = () => {
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ borderBottom: '2px solid #f0f0f0', background: '#fafafa' }}>
-              <th style={th}>Code</th>
-              <th style={th}>Name</th>
-              <th style={th}>City</th>
-              <th style={th}>Type</th>
-              <th style={th}>Manager</th>
-              <th style={th}>Cash Limit</th>
-              <th style={th}>Hours</th>
-              <th style={th}>Status</th>
-              <th style={th}>Actions</th>
+              <th style={th}>{t('agencies.columns.code')}</th>
+              <th style={th}>{t('agencies.columns.name')}</th>
+              <th style={th}>{t('agencies.columns.city')}</th>
+              <th style={th}>{t('agencies.columns.type')}</th>
+              <th style={th}>{t('agencies.columns.manager')}</th>
+              <th style={th}>{t('agencies.fields.cashLimit')}</th>
+              <th style={th}>{t('agencies.fields.openingHours')}</th>
+              <th style={th}>{t('agencies.columns.status')}</th>
+              <th style={th}>{t('agencies.columns.actions')}</th>
             </tr>
           </thead>
           <tbody>
@@ -205,17 +207,17 @@ const Agencies: React.FC = () => {
                 </td>
                 <td style={td}>
                   <div style={{ display: 'flex', gap: 6 }}>
-                    <IconBtn title="Edit" onClick={() => openEdit(a)}><Edit2 size={14} /></IconBtn>
+                    <IconBtn title={t('common.edit')} onClick={() => openEdit(a)}><Edit2 size={14} /></IconBtn>
                     <IconBtn title={a.status === 'active' ? 'Suspend' : 'Activate'} onClick={() => handleToggle(a)}>
                       {a.status === 'active' ? <ToggleRight size={14} color="#43A047" /> : <ToggleLeft size={14} color="#999" />}
                     </IconBtn>
-                    <IconBtn title="Delete" onClick={() => handleDelete(a)}><Trash2 size={14} color="#c62828" /></IconBtn>
+                    <IconBtn title={t('common.delete')} onClick={() => handleDelete(a)}><Trash2 size={14} color="#c62828" /></IconBtn>
                   </div>
                 </td>
               </tr>
             ))}
             {filtered.length === 0 && (
-              <tr><td colSpan={9} style={{ padding: 40, textAlign: 'center', color: '#999' }}>No agencies found.</td></tr>
+              <tr><td colSpan={9} style={{ padding: 40, textAlign: 'center', color: '#999' }}>{t('common.noData')}</td></tr>
             )}
           </tbody>
         </table>

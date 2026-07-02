@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { User, Mail, Shield, Calendar, Clock, Key, Save, Camera } from 'lucide-react';
 import { useToast } from '../components/Toast';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const NAVY = '#1B3A5C';
 const GREEN = '#43A047';
@@ -35,6 +36,7 @@ const rowStyle: React.CSSProperties = {
 };
 
 export default function Profile() {
+  const { t } = useLanguage();
   const { showToast } = useToast();
   const [profile, setProfile] = useState({
     name: 'Joel Wasike',
@@ -63,30 +65,30 @@ export default function Profile() {
   const handleSaveProfile = () => {
     setProfile({ ...editForm });
     setEditing(false);
-    showToast('Profile updated successfully!');
+    showToast(t('profile.success.profileUpdated'));
   };
 
   const handleChangePassword = () => {
     if (!passwords.current || !passwords.newPassword || !passwords.confirm) {
-      showToast('Please fill in all password fields.', 'warning');
+      showToast(t('profile.errors.fillAllFields'), 'warning');
       return;
     }
     if (passwords.newPassword !== passwords.confirm) {
-      showToast('New passwords do not match.', 'error');
+      showToast(t('profile.errors.passwordMismatch'), 'error');
       return;
     }
     if (passwords.newPassword.length < 8) {
-      showToast('Password must be at least 8 characters.', 'warning');
+      showToast(t('profile.errors.passwordTooShort'), 'warning');
       return;
     }
-    showToast('Password changed successfully!');
+    showToast(t('profile.success.passwordChanged'));
     setPasswords({ current: '', newPassword: '', confirm: '' });
   };
 
   return (
     <div style={{ fontFamily: FONT, padding: 32, minHeight: '100vh' }}>
       <div style={{ marginBottom: 28 }}>
-        <h1 style={{ margin: 0, fontSize: 28, fontWeight: 700, color: NAVY }}>My Profile</h1>
+        <h1 style={{ margin: 0, fontSize: 28, fontWeight: 700, color: NAVY }}>{t('profile.title')}</h1>
         <p style={{ margin: '4px 0 0', fontSize: 14, color: '#6B7280' }}>Manage your account details and security preferences</p>
       </div>
 
@@ -124,7 +126,7 @@ export default function Profile() {
               <span style={{
                 display: 'inline-block', padding: '4px 12px', borderRadius: 20, fontSize: 12,
                 fontWeight: 600, backgroundColor: '#E8F5E9', color: '#2E7D32',
-              }}>Active</span>
+              }}>{t('common.active')}</span>
             </div>
           </div>
         </div>
@@ -147,26 +149,26 @@ export default function Profile() {
                 padding: '6px 14px', borderRadius: 8, border: `1px solid ${NAVY}`,
                 backgroundColor: 'transparent', color: NAVY, fontSize: 12, fontWeight: 600,
                 cursor: 'pointer', fontFamily: FONT,
-              }}>Edit</button>
+              }}>{t('profile.editProfile')}</button>
             ) : (
               <div style={{ display: 'flex', gap: 8 }}>
                 <button onClick={() => setEditing(false)} style={{
                   padding: '6px 14px', borderRadius: 8, border: '1px solid #E5E7EB',
                   backgroundColor: '#fff', color: '#6B7280', fontSize: 12, fontWeight: 600,
                   cursor: 'pointer', fontFamily: FONT,
-                }}>Cancel</button>
+                }}>{t('profile.cancel')}</button>
                 <button onClick={handleSaveProfile} style={{
                   padding: '6px 14px', borderRadius: 8, border: 'none',
                   backgroundColor: GREEN, color: '#fff', fontSize: 12, fontWeight: 600,
                   cursor: 'pointer', fontFamily: FONT,
-                }}>Save</button>
+                }}>{t('profile.saveProfile')}</button>
               </div>
             )}
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div>
-              <label style={{ fontSize: 12, fontWeight: 600, color: '#6B7280', marginBottom: 6, display: 'block', textTransform: 'uppercase', letterSpacing: 0.5 }}>Full Name</label>
+              <label style={{ fontSize: 12, fontWeight: 600, color: '#6B7280', marginBottom: 6, display: 'block', textTransform: 'uppercase', letterSpacing: 0.5 }}>{t('profile.fields.fullName')}</label>
               {editing ? (
                 <input style={inputStyle} value={editForm.name} onChange={e => setEditForm({ ...editForm, name: e.target.value })} />
               ) : (
@@ -174,7 +176,7 @@ export default function Profile() {
               )}
             </div>
             <div>
-              <label style={{ fontSize: 12, fontWeight: 600, color: '#6B7280', marginBottom: 6, display: 'block', textTransform: 'uppercase', letterSpacing: 0.5 }}>Email</label>
+              <label style={{ fontSize: 12, fontWeight: 600, color: '#6B7280', marginBottom: 6, display: 'block', textTransform: 'uppercase', letterSpacing: 0.5 }}>{t('profile.fields.email')}</label>
               {editing ? (
                 <input style={inputStyle} type="email" value={editForm.email} onChange={e => setEditForm({ ...editForm, email: e.target.value })} />
               ) : (
@@ -184,7 +186,7 @@ export default function Profile() {
               )}
             </div>
             <div>
-              <label style={{ fontSize: 12, fontWeight: 600, color: '#6B7280', marginBottom: 6, display: 'block', textTransform: 'uppercase', letterSpacing: 0.5 }}>Phone</label>
+              <label style={{ fontSize: 12, fontWeight: 600, color: '#6B7280', marginBottom: 6, display: 'block', textTransform: 'uppercase', letterSpacing: 0.5 }}>{t('profile.fields.phone')}</label>
               {editing ? (
                 <input style={inputStyle} value={editForm.phone} onChange={e => setEditForm({ ...editForm, phone: e.target.value })} />
               ) : (
@@ -194,13 +196,13 @@ export default function Profile() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
               <div>
                 <label style={{ fontSize: 12, fontWeight: 600, color: '#6B7280', marginBottom: 6, display: 'block', textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                  <Calendar size={12} style={{ marginRight: 4, verticalAlign: 'middle' }} /> Account Created
+                  <Calendar size={12} style={{ marginRight: 4, verticalAlign: 'middle' }} /> {t('profile.fields.memberSince')}
                 </label>
                 <div style={{ fontSize: 14, color: '#374151', padding: '10px 0' }}>{profile.createdAt}</div>
               </div>
               <div>
                 <label style={{ fontSize: 12, fontWeight: 600, color: '#6B7280', marginBottom: 6, display: 'block', textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                  <Clock size={12} style={{ marginRight: 4, verticalAlign: 'middle' }} /> Last Login
+                  <Clock size={12} style={{ marginRight: 4, verticalAlign: 'middle' }} /> {t('profile.fields.lastLogin')}
                 </label>
                 <div style={{ fontSize: 14, color: '#374151', padding: '10px 0' }}>{profile.lastLogin}</div>
               </div>
@@ -214,26 +216,26 @@ export default function Profile() {
           boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
         }}>
           <div style={{ fontSize: 16, fontWeight: 700, color: NAVY, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Shield size={18} color={GREEN} /> Security
+            <Shield size={18} color={GREEN} /> {t('profile.securitySettings')}
           </div>
           <div style={rowStyle}>
             <div>
-              <div style={{ fontSize: 14, color: NAVY, fontWeight: 500 }}>Two-Factor Authentication</div>
-              <div style={{ fontSize: 12, color: '#7C8D9E', marginTop: 2 }}>Extra security on login</div>
+              <div style={{ fontSize: 14, color: NAVY, fontWeight: 500 }}>{t('profile.twoFactor')}</div>
+              <div style={{ fontSize: 12, color: '#7C8D9E', marginTop: 2 }}>{t('profile.twoFactorDesc')}</div>
             </div>
             <Toggle on={security.twoFactor} onToggle={() => setSecurity(p => ({ ...p, twoFactor: !p.twoFactor }))} />
           </div>
           <div style={rowStyle}>
             <div>
-              <div style={{ fontSize: 14, color: NAVY, fontWeight: 500 }}>Email Alerts</div>
-              <div style={{ fontSize: 12, color: '#7C8D9E', marginTop: 2 }}>Get notified about important actions</div>
+              <div style={{ fontSize: 14, color: NAVY, fontWeight: 500 }}>{t('profile.emailAlerts')}</div>
+              <div style={{ fontSize: 12, color: '#7C8D9E', marginTop: 2 }}>{t('profile.emailAlertsDesc')}</div>
             </div>
             <Toggle on={security.emailAlerts} onToggle={() => setSecurity(p => ({ ...p, emailAlerts: !p.emailAlerts }))} />
           </div>
           <div style={{ ...rowStyle, borderBottom: 'none' }}>
             <div>
-              <div style={{ fontSize: 14, color: NAVY, fontWeight: 500 }}>Login Alerts</div>
-              <div style={{ fontSize: 12, color: '#7C8D9E', marginTop: 2 }}>Get alerted on new device logins</div>
+              <div style={{ fontSize: 14, color: NAVY, fontWeight: 500 }}>{t('profile.loginAlerts')}</div>
+              <div style={{ fontSize: 12, color: '#7C8D9E', marginTop: 2 }}>{t('profile.loginAlertsDesc')}</div>
             </div>
             <Toggle on={security.loginAlerts} onToggle={() => setSecurity(p => ({ ...p, loginAlerts: !p.loginAlerts }))} />
           </div>
@@ -246,21 +248,21 @@ export default function Profile() {
           boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
         }}>
           <div style={{ fontSize: 16, fontWeight: 700, color: NAVY, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Key size={18} color={GREEN} /> Change Password
+            <Key size={18} color={GREEN} /> {t('profile.changePassword')}
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
             <div>
-              <label style={{ fontSize: 12, fontWeight: 600, color: '#6B7280', marginBottom: 6, display: 'block', textTransform: 'uppercase', letterSpacing: 0.5 }}>Current Password</label>
+              <label style={{ fontSize: 12, fontWeight: 600, color: '#6B7280', marginBottom: 6, display: 'block', textTransform: 'uppercase', letterSpacing: 0.5 }}>{t('profile.currentPassword')}</label>
               <input style={inputStyle} type="password" placeholder="Enter current password"
                 value={passwords.current} onChange={e => setPasswords(p => ({ ...p, current: e.target.value }))} />
             </div>
             <div>
-              <label style={{ fontSize: 12, fontWeight: 600, color: '#6B7280', marginBottom: 6, display: 'block', textTransform: 'uppercase', letterSpacing: 0.5 }}>New Password</label>
+              <label style={{ fontSize: 12, fontWeight: 600, color: '#6B7280', marginBottom: 6, display: 'block', textTransform: 'uppercase', letterSpacing: 0.5 }}>{t('profile.newPassword')}</label>
               <input style={inputStyle} type="password" placeholder="Enter new password"
                 value={passwords.newPassword} onChange={e => setPasswords(p => ({ ...p, newPassword: e.target.value }))} />
             </div>
             <div>
-              <label style={{ fontSize: 12, fontWeight: 600, color: '#6B7280', marginBottom: 6, display: 'block', textTransform: 'uppercase', letterSpacing: 0.5 }}>Confirm Password</label>
+              <label style={{ fontSize: 12, fontWeight: 600, color: '#6B7280', marginBottom: 6, display: 'block', textTransform: 'uppercase', letterSpacing: 0.5 }}>{t('profile.confirmPassword')}</label>
               <input style={inputStyle} type="password" placeholder="Confirm new password"
                 value={passwords.confirm} onChange={e => setPasswords(p => ({ ...p, confirm: e.target.value }))} />
             </div>
@@ -271,7 +273,7 @@ export default function Profile() {
               borderRadius: 10, border: 'none', background: NAVY, color: '#fff',
               fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: FONT,
             }}>
-              <Save size={16} /> Update Password
+              <Save size={16} /> {t('profile.updatePassword')}
             </button>
           </div>
         </div>

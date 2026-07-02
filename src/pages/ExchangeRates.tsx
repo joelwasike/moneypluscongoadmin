@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { RefreshCw, DollarSign, Info, Edit2, Save } from 'lucide-react';
 import { exchangeRates as initialRates, ExchangeRate } from '../data/mockData';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const ExchangeRates: React.FC = () => {
+  const { t } = useLanguage();
   const [rates, setRates] = useState<ExchangeRate[]>(
     initialRates.map((r) => ({ ...r }))
   );
@@ -217,12 +219,12 @@ const ExchangeRates: React.FC = () => {
     <div style={styles.page}>
       <div style={styles.header}>
         <div>
-          <h1 style={styles.title}>Exchange Rates</h1>
-          <p style={styles.subtitle}>Manage currency conversion rates</p>
+          <h1 style={styles.title}>{t('exchangeRates.title')}</h1>
+          <p style={styles.subtitle}>{t('exchangeRates.subtitle')}</p>
         </div>
         <button style={styles.refreshBtn} onClick={handleRefreshAll}>
           <RefreshCw size={16} />
-          Refresh All Rates
+          {t('common.refresh')}
         </button>
       </div>
 
@@ -236,18 +238,18 @@ const ExchangeRates: React.FC = () => {
       <div style={styles.card}>
         <div style={styles.cardHeader}>
           <DollarSign size={18} color="#1B3A5C" />
-          <span style={styles.cardTitle}>Currency Rates</span>
+          <span style={styles.cardTitle}>{t('exchangeRates.currencyRates')}</span>
         </div>
         <table style={styles.table}>
           <thead>
             <tr>
-              <th style={styles.th}>From</th>
-              <th style={styles.th}>To</th>
-              <th style={styles.th}>Rate</th>
-              <th style={styles.th}>Spread %</th>
-              <th style={styles.th}>Last Updated</th>
-              <th style={styles.th}>Auto-Update</th>
-              <th style={styles.th}>Actions</th>
+              <th style={styles.th}>{t('exchangeRates.columns.from')}</th>
+              <th style={styles.th}>{t('exchangeRates.columns.to')}</th>
+              <th style={styles.th}>{t('exchangeRates.columns.rate')}</th>
+              <th style={styles.th}>{t('exchangeRates.columns.spread')}</th>
+              <th style={styles.th}>{t('exchangeRates.columns.lastUpdated')}</th>
+              <th style={styles.th}>{t('exchangeRates.columns.autoUpdate')}</th>
+              <th style={styles.th}>{t('exchangeRates.columns.actions')}</th>
             </tr>
           </thead>
           <tbody>
@@ -318,12 +320,12 @@ const ExchangeRates: React.FC = () => {
                     {isEditing ? (
                       <button style={styles.btnSave} onClick={() => handleSave(r.id)}>
                         <Save size={14} />
-                        Save
+                        {t('common.save')}
                       </button>
                     ) : (
                       <button style={styles.btnEdit} onClick={() => handleEdit(r)}>
                         <Edit2 size={14} />
-                        Edit
+                        {t('common.edit')}
                       </button>
                     )}
                   </td>

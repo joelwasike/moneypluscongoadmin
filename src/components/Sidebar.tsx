@@ -23,6 +23,7 @@ import {
   Route,
   AlertTriangle,
 } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const SIDEBAR_WIDTH = 260;
 
@@ -34,67 +35,7 @@ const COLORS = {
   activeBackground: 'rgba(255,255,255,0.1)',
 };
 
-interface NavItem {
-  label: string;
-  path: string;
-  icon: React.ReactNode;
-}
-
-interface NavSection {
-  title: string;
-  items: NavItem[];
-}
-
 const ICON_SIZE = 18;
-
-const sections: NavSection[] = [
-  {
-    title: 'MAIN',
-    items: [
-      { label: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={ICON_SIZE} /> },
-      { label: 'Analytics', path: '/analytics', icon: <BarChart3 size={ICON_SIZE} /> },
-    ],
-  },
-  {
-    title: 'MANAGEMENT',
-    items: [
-      { label: 'Users', path: '/users', icon: <Users size={ICON_SIZE} /> },
-      { label: 'Agents', path: '/agents', icon: <UserCheck size={ICON_SIZE} /> },
-      { label: 'Agencies', path: '/agencies', icon: <Store size={ICON_SIZE} /> },
-      { label: 'Transactions', path: '/transactions', icon: <ArrowLeftRight size={ICON_SIZE} /> },
-      { label: 'Compliance', path: '/compliance', icon: <AlertTriangle size={ICON_SIZE} /> },
-      { label: 'KYC Review', path: '/kyc', icon: <ShieldCheck size={ICON_SIZE} /> },
-      { label: 'Wallets', path: '/wallets', icon: <Wallet size={ICON_SIZE} /> },
-      { label: 'Cards', path: '/cards-admin', icon: <CreditCard size={ICON_SIZE} /> },
-      { label: 'Split Payments', path: '/splits', icon: <Split size={ICON_SIZE} /> },
-    ],
-  },
-  {
-    title: 'CONFIGURATION',
-    items: [
-      { label: 'Corridors', path: '/corridors', icon: <Route size={ICON_SIZE} /> },
-      { label: 'Exchange Rates', path: '/exchange-rates', icon: <DollarSign size={ICON_SIZE} /> },
-      { label: 'Fees & Charges', path: '/fees', icon: <Receipt size={ICON_SIZE} /> },
-      { label: 'Countries', path: '/countries', icon: <Globe size={ICON_SIZE} /> },
-      { label: 'Crypto Settings', path: '/crypto-settings', icon: <Bitcoin size={ICON_SIZE} /> },
-    ],
-  },
-  {
-    title: 'SUPPORT',
-    items: [
-      { label: 'Chat Support', path: '/chat-support', icon: <MessageSquare size={ICON_SIZE} /> },
-      { label: 'Help Articles', path: '/help-articles', icon: <BookOpen size={ICON_SIZE} /> },
-    ],
-  },
-  {
-    title: 'SYSTEM',
-    items: [
-      { label: 'Settings', path: '/settings', icon: <Settings size={ICON_SIZE} /> },
-      { label: 'Admin Accounts', path: '/admin-accounts', icon: <UserCog size={ICON_SIZE} /> },
-      { label: 'Audit Log', path: '/audit-log', icon: <FileText size={ICON_SIZE} /> },
-    ],
-  },
-];
 
 const styles: Record<string, React.CSSProperties> = {
   sidebar: {
@@ -152,6 +93,57 @@ const styles: Record<string, React.CSSProperties> = {
 };
 
 const Sidebar: React.FC = () => {
+  const { t } = useLanguage();
+
+  const sections = [
+    {
+      title: t('sidebar.main'),
+      items: [
+        { label: t('sidebar.dashboard'), path: '/dashboard', icon: <LayoutDashboard size={ICON_SIZE} /> },
+        { label: t('sidebar.analytics'), path: '/analytics', icon: <BarChart3 size={ICON_SIZE} /> },
+      ],
+    },
+    {
+      title: t('sidebar.management'),
+      items: [
+        { label: t('sidebar.users'), path: '/users', icon: <Users size={ICON_SIZE} /> },
+        { label: t('sidebar.agents'), path: '/agents', icon: <UserCheck size={ICON_SIZE} /> },
+        { label: t('sidebar.agencies'), path: '/agencies', icon: <Store size={ICON_SIZE} /> },
+        { label: t('sidebar.transactions'), path: '/transactions', icon: <ArrowLeftRight size={ICON_SIZE} /> },
+        { label: t('sidebar.compliance'), path: '/compliance', icon: <AlertTriangle size={ICON_SIZE} /> },
+        { label: t('sidebar.kycReview'), path: '/kyc', icon: <ShieldCheck size={ICON_SIZE} /> },
+        { label: t('sidebar.wallets'), path: '/wallets', icon: <Wallet size={ICON_SIZE} /> },
+        { label: t('sidebar.cards'), path: '/cards-admin', icon: <CreditCard size={ICON_SIZE} /> },
+        { label: t('sidebar.splitPayments'), path: '/splits', icon: <Split size={ICON_SIZE} /> },
+      ],
+    },
+    {
+      title: t('sidebar.configuration'),
+      items: [
+        { label: t('sidebar.corridors'), path: '/corridors', icon: <Route size={ICON_SIZE} /> },
+        { label: t('sidebar.exchangeRates'), path: '/exchange-rates', icon: <DollarSign size={ICON_SIZE} /> },
+        { label: t('sidebar.feesCharges'), path: '/fees', icon: <Receipt size={ICON_SIZE} /> },
+        { label: t('sidebar.countries'), path: '/countries', icon: <Globe size={ICON_SIZE} /> },
+        { label: t('sidebar.cryptoSettings'), path: '/crypto-settings', icon: <Bitcoin size={ICON_SIZE} /> },
+      ],
+    },
+    {
+      title: t('sidebar.support'),
+      items: [
+        { label: t('sidebar.chatSupport'), path: '/chat-support', icon: <MessageSquare size={ICON_SIZE} /> },
+        { label: t('sidebar.helpArticles'), path: '/help-articles', icon: <BookOpen size={ICON_SIZE} /> },
+      ],
+    },
+    {
+      title: t('sidebar.system'),
+      items: [
+        { label: t('sidebar.settings'), path: '/settings', icon: <Settings size={ICON_SIZE} /> },
+        { label: t('sidebar.adminAccounts'), path: '/admin-accounts', icon: <UserCog size={ICON_SIZE} /> },
+        { label: t('sidebar.auditLog'), path: '/audit-log', icon: <FileText size={ICON_SIZE} /> },
+      ],
+    },
+  ];
+
   return (
     <aside style={styles.sidebar}>
       <div style={styles.logoContainer}>

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Users, CheckCircle, Clock } from 'lucide-react';
 import api from '../services/api';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const SplitsAdmin: React.FC = () => {
+  const { t } = useLanguage();
   const [data, setData] = useState<any>(null);
 
   useEffect(() => {
@@ -11,18 +13,18 @@ const SplitsAdmin: React.FC = () => {
 
   return (
     <div>
-      <h1 style={{ margin: '0 0 24px', fontSize: 24, fontWeight: 700 }}>Split Payments</h1>
+      <h1 style={{ margin: '0 0 24px', fontSize: 24, fontWeight: 700 }}>{t('splits.title')}</h1>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 24 }}>
-        <StatCard label="Total Splits" value={data?.total || 0} color="#1B3A5C" icon={<Users size={20} />} />
-        <StatCard label="Active" value={data?.active || 0} color="#FF9800" icon={<Clock size={20} />} />
-        <StatCard label="Settled" value={data?.settled || 0} color="#43A047" icon={<CheckCircle size={20} />} />
+        <StatCard label={t('splits.totalSplits')} value={data?.total || 0} color="#1B3A5C" icon={<Users size={20} />} />
+        <StatCard label={t('splits.active')} value={data?.active || 0} color="#FF9800" icon={<Clock size={20} />} />
+        <StatCard label={t('splits.settled')} value={data?.settled || 0} color="#43A047" icon={<CheckCircle size={20} />} />
       </div>
 
       <div style={{ background: '#fff', borderRadius: 12, padding: 20, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead><tr style={{ borderBottom: '2px solid #f0f0f0' }}>
-            <th style={th}>ID</th><th style={th}>Title</th><th style={th}>Creator</th><th style={th}>Category</th><th style={th}>Total</th><th style={th}>Members</th><th style={th}>Paid</th><th style={th}>Status</th><th style={th}>Created</th>
+            <th style={th}>{t('splits.columns.id')}</th><th style={th}>{t('splits.columns.title')}</th><th style={th}>{t('splits.columns.creator')}</th><th style={th}>{t('splits.columns.category')}</th><th style={th}>{t('splits.columns.total')}</th><th style={th}>{t('splits.columns.members')}</th><th style={th}>{t('splits.columns.paid')}</th><th style={th}>{t('splits.columns.status')}</th><th style={th}>{t('splits.columns.created')}</th>
           </tr></thead>
           <tbody>
             {(data?.splits || []).map((s: any) => {
@@ -42,7 +44,7 @@ const SplitsAdmin: React.FC = () => {
                 </tr>
               );
             })}
-            {(!data?.splits || data.splits.length === 0) && <tr><td colSpan={9} style={{ textAlign: 'center', padding: 40, color: '#999' }}>No split payments</td></tr>}
+            {(!data?.splits || data.splits.length === 0) && <tr><td colSpan={9} style={{ textAlign: 'center', padding: 40, color: '#999' }}>{t('splits.noSplits')}</td></tr>}
           </tbody>
         </table>
       </div>

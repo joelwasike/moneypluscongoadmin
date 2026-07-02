@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, ToggleLeft, ToggleRight, Trash2, Route } from 'lucide-react';
 import api from '../services/api';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface Corridor {
   id: number;
@@ -36,6 +37,7 @@ const emptyForm = (): Partial<Corridor> => ({
 });
 
 const Corridors: React.FC = () => {
+  const { t } = useLanguage();
   const [corridors, setCorridors] = useState<Corridor[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Corridor | null>(null);
@@ -66,7 +68,7 @@ const Corridors: React.FC = () => {
 
   const handleSave = async () => {
     if (!form.country_code || !form.country_name || !form.dest_currency) {
-      setError('Country code, name, and destination currency are required.');
+      setError(t('corridors.nameRequired'));
       return;
     }
     setSaving(true);
@@ -79,7 +81,7 @@ const Corridors: React.FC = () => {
       setShowForm(false);
       load();
     } else {
-      setError(res.message || 'Failed to save');
+      setError(res.message || t('corridors.failedToSave'));
     }
   };
 
@@ -102,14 +104,14 @@ const Corridors: React.FC = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div>
           <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Route size={22} /> Remittance Corridors
+            <Route size={22} /> {t('corridors.title')}
           </h1>
           <p style={{ margin: '4px 0 0', color: '#666', fontSize: 14 }}>
             Configure fee structures and FX spreads for each destination corridor.
           </p>
         </div>
         <button onClick={openCreate} style={btn('#1B3A5C')}>
-          <Plus size={16} /> Add Corridor
+          <Plus size={16} /> {t('corridors.newCorridor')}
         </button>
       </div>
 
@@ -117,35 +119,35 @@ const Corridors: React.FC = () => {
         <div style={modalOverlay}>
           <div style={modal}>
             <h3 style={{ margin: '0 0 20px', fontSize: 17, fontWeight: 700 }}>
-              {editing ? 'Edit Corridor' : 'New Corridor'}
+              {editing ? t('corridors.editCorridor') : t('corridors.newCorridor')}
             </h3>
 
             <div style={grid2}>
-              <Field label="Country Code (ISO 2)" value={f('country_code') as string} onChange={v => set('country_code', v.toUpperCase())} placeholder="FR" disabled={!!editing} />
-              <Field label="Country Name" value={f('country_name') as string} onChange={v => set('country_name', v)} placeholder="France" />
-              <Field label="Flag Emoji" value={f('country_flag') as string} onChange={v => set('country_flag', v)} placeholder="🇫🇷" />
-              <Field label="Dest Currency" value={f('dest_currency') as string} onChange={v => set('dest_currency', v.toUpperCase())} placeholder="EUR" />
-              <Field label="Partner Name" value={f('partner_name') as string} onChange={v => set('partner_name', v)} placeholder="WorldRemit" />
-              <Field label="Outbound Rail" value={f('outbound_rail') as string} onChange={v => set('outbound_rail', v)} placeholder="SWIFT / MoMo" />
-              <Field label="Fee %" value={f('fee_percent') as number} onChange={v => set('fee_percent', parseFloat(v) || 0)} type="number" />
-              <Field label="Fee Min (XAF)" value={f('fee_min') as number} onChange={v => set('fee_min', parseFloat(v) || 0)} type="number" />
-              <Field label="Fee Max (XAF)" value={f('fee_max') as number} onChange={v => set('fee_max', parseFloat(v) || 0)} type="number" />
+              <Field label={t('corridors.fields.countryCode')} value={f('country_code') as string} onChange={v => set('country_code', v.toUpperCase())} placeholder="FR" disabled={!!editing} />
+              <Field label={t('corridors.fields.countryName')} value={f('country_name') as string} onChange={v => set('country_name', v)} placeholder="France" />
+              <Field label={t('corridors.fields.flagEmoji')} value={f('country_flag') as string} onChange={v => set('country_flag', v)} placeholder="🇫🇷" />
+              <Field label={t('corridors.fields.destCurrency')} value={f('dest_currency') as string} onChange={v => set('dest_currency', v.toUpperCase())} placeholder="EUR" />
+              <Field label={t('corridors.fields.partnerName')} value={f('partner_name') as string} onChange={v => set('partner_name', v)} placeholder="WorldRemit" />
+              <Field label={t('corridors.fields.outboundRail')} value={f('outbound_rail') as string} onChange={v => set('outbound_rail', v)} placeholder="SWIFT / MoMo" />
+              <Field label={t('corridors.fields.feePercent')} value={f('fee_percent') as number} onChange={v => set('fee_percent', parseFloat(v) || 0)} type="number" />
+              <Field label={t('corridors.fields.feeMin')} value={f('fee_min') as number} onChange={v => set('fee_min', parseFloat(v) || 0)} type="number" />
+              <Field label={t('corridors.fields.feeMax')} value={f('fee_max') as number} onChange={v => set('fee_max', parseFloat(v) || 0)} type="number" />
               <Field label="FX Spread (0.015 = 1.5%)" value={f('fx_spread') as number} onChange={v => set('fx_spread', parseFloat(v) || 0)} type="number" />
-              <Field label="Settlement Time" value={f('settlement_time') as string} onChange={v => set('settlement_time', v)} placeholder="T+1" />
-              <Field label="Region" value={f('region') as string} onChange={v => set('region', v)} placeholder="EU / Africa / Asia" />
+              <Field label={t('corridors.fields.settlementTime')} value={f('settlement_time') as string} onChange={v => set('settlement_time', v)} placeholder="T+1" />
+              <Field label={t('corridors.fields.region')} value={f('region') as string} onChange={v => set('region', v)} placeholder="EU / Africa / Asia" />
             </div>
 
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '16px 0', fontSize: 14, cursor: 'pointer' }}>
               <input type="checkbox" checked={!!f('is_active')} onChange={e => set('is_active', e.target.checked)} />
-              Active (visible to users)
+              {t('common.active')} (visible to users)
             </label>
 
             {error && <p style={{ color: '#c62828', fontSize: 13, margin: '0 0 12px' }}>{error}</p>}
 
             <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-              <button onClick={() => setShowForm(false)} style={btn('#888')}>Cancel</button>
+              <button onClick={() => setShowForm(false)} style={btn('#888')}>{t('common.cancel')}</button>
               <button onClick={handleSave} disabled={saving} style={btn('#43A047')}>
-                {saving ? 'Saving…' : 'Save'}
+                {saving ? t('common.saving') : t('common.save')}
               </button>
             </div>
           </div>
@@ -156,15 +158,15 @@ const Corridors: React.FC = () => {
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ borderBottom: '2px solid #f0f0f0', background: '#fafafa' }}>
-              <th style={th}>Country</th>
-              <th style={th}>Currency</th>
-              <th style={th}>Partner</th>
-              <th style={th}>Fee</th>
+              <th style={th}>{t('corridors.columns.country')}</th>
+              <th style={th}>{t('corridors.columns.currency')}</th>
+              <th style={th}>{t('corridors.columns.partner')}</th>
+              <th style={th}>{t('corridors.columns.fee')}</th>
               <th style={th}>FX Spread</th>
               <th style={th}>Settlement</th>
-              <th style={th}>Region</th>
-              <th style={th}>Status</th>
-              <th style={th}>Actions</th>
+              <th style={th}>{t('corridors.columns.region')}</th>
+              <th style={th}>{t('corridors.columns.status')}</th>
+              <th style={th}>{t('corridors.columns.actions')}</th>
             </tr>
           </thead>
           <tbody>
@@ -186,22 +188,22 @@ const Corridors: React.FC = () => {
                 <td style={td}><span style={badge('#E3F2FD', '#1565C0')}>{c.region}</span></td>
                 <td style={td}>
                   <span style={c.is_active ? badge('#E8F5E9', '#2E7D32') : badge('#FFEBEE', '#C62828')}>
-                    {c.is_active ? 'Active' : 'Inactive'}
+                    {c.is_active ? t('common.active') : t('common.inactive')}
                   </span>
                 </td>
                 <td style={td}>
                   <div style={{ display: 'flex', gap: 6 }}>
-                    <IconBtn title="Edit" onClick={() => openEdit(c)}><Edit2 size={14} /></IconBtn>
+                    <IconBtn title={t('common.edit')} onClick={() => openEdit(c)}><Edit2 size={14} /></IconBtn>
                     <IconBtn title={c.is_active ? 'Deactivate' : 'Activate'} onClick={() => handleToggle(c)}>
                       {c.is_active ? <ToggleRight size={14} color="#43A047" /> : <ToggleLeft size={14} color="#999" />}
                     </IconBtn>
-                    <IconBtn title="Delete" onClick={() => handleDelete(c)}><Trash2 size={14} color="#c62828" /></IconBtn>
+                    <IconBtn title={t('common.delete')} onClick={() => handleDelete(c)}><Trash2 size={14} color="#c62828" /></IconBtn>
                   </div>
                 </td>
               </tr>
             ))}
             {corridors.length === 0 && (
-              <tr><td colSpan={9} style={{ padding: 40, textAlign: 'center', color: '#999' }}>No corridors configured yet.</td></tr>
+              <tr><td colSpan={9} style={{ padding: 40, textAlign: 'center', color: '#999' }}>{t('common.noData')}</td></tr>
             )}
           </tbody>
         </table>

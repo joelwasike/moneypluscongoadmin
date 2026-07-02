@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Search, ArrowUpDown, CheckCircle, Clock, XCircle } from 'lucide-react';
 import api from '../services/api';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const NAVY = '#1B3A5C';
 const GREEN = '#43A047';
@@ -27,6 +28,7 @@ const statusBadgeColors: Record<string, { bg: string; color: string }> = {
 };
 
 const TransactionsPage: React.FC = () => {
+  const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<'all' | string>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | string>('all');
@@ -46,7 +48,7 @@ const TransactionsPage: React.FC = () => {
     const res = await api.listTransactions(params.toString());
     setLoading(false);
     if (!res?.success) {
-      setError(res?.message || 'Failed to load transactions');
+      setError(res?.message || t('transactions.failedToLoad'));
       setRows([]);
       setStats({ total: 0, completed: 0, pending: 0, failed: 0 });
       return;
@@ -67,10 +69,10 @@ const TransactionsPage: React.FC = () => {
   }, [typeFilter, statusFilter]);
 
   const statCards = [
-    { label: 'Total Transactions', value: stats.total, icon: <ArrowUpDown size={22} color="#fff" />, bg: NAVY },
-    { label: 'Completed', value: stats.completed, icon: <CheckCircle size={22} color="#fff" />, bg: GREEN },
-    { label: 'Pending', value: stats.pending, icon: <Clock size={22} color="#fff" />, bg: '#E65100' },
-    { label: 'Failed', value: stats.failed, icon: <XCircle size={22} color="#fff" />, bg: '#C62828' },
+    { label: t('transactions.totalTx'), value: stats.total, icon: <ArrowUpDown size={22} color="#fff" />, bg: NAVY },
+    { label: t('transactions.completed'), value: stats.completed, icon: <CheckCircle size={22} color="#fff" />, bg: GREEN },
+    { label: t('transactions.pending'), value: stats.pending, icon: <Clock size={22} color="#fff" />, bg: '#E65100' },
+    { label: t('transactions.failed'), value: stats.failed, icon: <XCircle size={22} color="#fff" />, bg: '#C62828' },
   ];
 
   const selectStyle: React.CSSProperties = {
@@ -89,8 +91,8 @@ const TransactionsPage: React.FC = () => {
   return (
     <div style={{ fontFamily: FONT, backgroundColor: BG, minHeight: '100vh', padding: 32 }}>
       <div style={{ marginBottom: 28 }}>
-        <h1 style={{ margin: 0, fontSize: 28, fontWeight: 700, color: NAVY }}>Transactions</h1>
-        <p style={{ margin: '4px 0 0', fontSize: 14, color: '#6B7280' }}>Monitor all financial activity</p>
+        <h1 style={{ margin: 0, fontSize: 28, fontWeight: 700, color: NAVY }}>{t('transactions.title')}</h1>
+        <p style={{ margin: '4px 0 0', fontSize: 14, color: '#6B7280' }}>{t('analytics.subtitle')}</p>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20, marginBottom: 28 }}>
@@ -146,7 +148,7 @@ const TransactionsPage: React.FC = () => {
           <Search size={18} color="#9CA3AF" style={{ position: 'absolute', left: 12, top: 10 }} />
           <input
             type="text"
-            placeholder="Search by reference or description..."
+            placeholder={t('transactions.searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={(e) => {
@@ -166,7 +168,7 @@ const TransactionsPage: React.FC = () => {
           />
         </div>
         <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} style={selectStyle}>
-          <option value="all">All Types</option>
+          <option value="all">{t('transactions.filterType')}</option>
           <option value="send">Send</option>
           <option value="receive">Receive</option>
           <option value="exchange">Exchange</option>
@@ -176,11 +178,11 @@ const TransactionsPage: React.FC = () => {
           <option value="cash_out">Cash Out</option>
         </select>
         <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} style={selectStyle}>
-          <option value="all">All Statuses</option>
-          <option value="completed">Completed</option>
-          <option value="pending">Pending</option>
-          <option value="failed">Failed</option>
-          <option value="cancelled">Cancelled</option>
+          <option value="all">{t('transactions.filterStatus')}</option>
+          <option value="completed">{t('common.completed')}</option>
+          <option value="pending">{t('common.pending')}</option>
+          <option value="failed">{t('common.failed')}</option>
+          <option value="cancelled">{t('common.cancelled')}</option>
         </select>
         <button
           onClick={load}
@@ -195,7 +197,7 @@ const TransactionsPage: React.FC = () => {
             color: NAVY,
           }}
         >
-          Apply
+          {t('common.refresh')}
         </button>
       </div>
 
@@ -209,14 +211,14 @@ const TransactionsPage: React.FC = () => {
       >
         {(loading || error) && (
           <div style={{ padding: 14, color: error ? '#C62828' : '#6B7280', fontWeight: 600 }}>
-            {error ? error : 'Loading…'}
+            {error ? error : t('common.loading')}
           </div>
         )}
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
             <thead>
               <tr style={{ backgroundColor: '#F9FAFB', borderBottom: '1px solid #E5E7EB' }}>
-                {['ID', 'Type', 'Amount', 'Fee', 'Currency', 'Status', 'Reference', 'Description', 'Date'].map((h) => (
+                {[t('common.id'), t('common.type'), t('common.amount'), t('transactions.columns.fee'), t('common.currency'), t('common.status'), t('transactions.columns.reference'), t('transactions.columns.description'), t('common.date')].map((h) => (
                   <th
                     key={h}
                     style={{
@@ -279,7 +281,7 @@ const TransactionsPage: React.FC = () => {
               {!loading && !error && rows.length === 0 && (
                 <tr>
                   <td colSpan={9} style={{ padding: 40, textAlign: 'center', color: '#9CA3AF' }}>
-                    No transactions found.
+                    {t('transactions.noResults')}
                   </td>
                 </tr>
               )}

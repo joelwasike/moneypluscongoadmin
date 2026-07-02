@@ -4,6 +4,8 @@ import { Bell, Search, LogOut, User, Settings } from 'lucide-react';
 import Sidebar, { SIDEBAR_WIDTH } from './Sidebar';
 import { adminNotifications } from '../data/mockData';
 import { useAuth } from '../App';
+import { useLanguage } from '../contexts/LanguageContext';
+import { Language } from '../i18n/translations';
 
 const COLORS = {
   background: '#F5F7FA',
@@ -118,17 +120,26 @@ const typeColors: Record<string, { bg: string; color: string }> = {
   success: { bg: '#E8F5E9', color: '#2E7D32' },
 };
 
+const LANGUAGES: { code: Language; flag: string; label: string }[] = [
+  { code: 'en', flag: '🇬🇧', label: 'English' },
+  { code: 'fr', flag: '🇫🇷', label: 'Français' },
+];
+
 const Layout: React.FC = () => {
   const navigate = useNavigate();
   const { logout } = useAuth();
+  const { lang, setLang, t } = useLanguage();
   const [searchValue, setSearchValue] = useState('');
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [showLang, setShowLang] = useState(false);
   const [notifications, setNotifications] = useState(adminNotifications.map(n => ({ ...n })));
   const notifRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
+  const langRef = useRef<HTMLDivElement>(null);
 
   const unreadCount = notifications.filter(n => !n.read).length;
+  const currentLang = LANGUAGES.find(l => l.code === lang) || LANGUAGES[0];
 
   const markAsRead = (id: string) => {
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
@@ -138,7 +149,6 @@ const Layout: React.FC = () => {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
   };
 
-  // Close dropdowns on outside click
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
@@ -146,6 +156,9 @@ const Layout: React.FC = () => {
       }
       if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
         setShowProfile(false);
+      }
+      if (langRef.current && !langRef.current.contains(e.target as Node)) {
+        setShowLang(false);
       }
     };
     document.addEventListener('mousedown', handleClick);
@@ -162,7 +175,7 @@ const Layout: React.FC = () => {
             <Search size={16} style={styles.searchIcon} />
             <input
               type="text"
-              placeholder="Search..."
+              placeholder={t('common.search')}
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
               style={styles.searchInput}
@@ -170,12 +183,70 @@ const Layout: React.FC = () => {
           </div>
 
           <div style={styles.headerRight}>
+            {/* Language Selector */}
+            <div ref={langRef} style={{ position: 'relative' }}>
+              <button
+                onClick={() => { setShowLang(!showLang); setShowNotifications(false); setShowProfile(false); }}
+                title={currentLang.label}
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: '50%',
+                  border: '2px solid #E2E8F0',
+                  background: '#F8FAFC',
+                  cursor: 'pointer',
+                  fontSize: 20,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: 0,
+                  lineHeight: 1,
+                }}
+              >
+                {currentLang.flag}
+              </button>
+
+              {showLang && (
+                <div style={{
+                  position: 'absolute', top: '100%', right: 0, marginTop: 8,
+                  width: 150, backgroundColor: '#fff', borderRadius: 12,
+                  boxShadow: '0 10px 40px rgba(0,0,0,0.12)', overflow: 'hidden',
+                  border: '1px solid #E5E7EB',
+                }}>
+                  {LANGUAGES.map(l => (
+                    <button
+                      key={l.code}
+                      onClick={() => { setLang(l.code); setShowLang(false); }}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 10,
+                        padding: '10px 16px', width: '100%', background: 'none',
+                        border: 'none', cursor: 'pointer', fontSize: 14,
+                        fontFamily: 'Inter, sans-serif', fontWeight: lang === l.code ? 700 : 400,
+                        color: lang === l.code ? COLORS.primary : '#374151',
+                        backgroundColor: lang === l.code ? '#F0F4F8' : 'transparent',
+                        transition: 'background 0.15s',
+                      }}
+                      onMouseEnter={e => {
+                        if (lang !== l.code) e.currentTarget.style.backgroundColor = '#F9FAFB';
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.backgroundColor = lang === l.code ? '#F0F4F8' : 'transparent';
+                      }}
+                    >
+                      <span style={{ fontSize: 20 }}>{l.flag}</span>
+                      {l.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {/* Notifications */}
             <div ref={notifRef} style={{ position: 'relative' }}>
               <button
                 style={styles.notificationButton}
-                aria-label="Notifications"
-                onClick={() => { setShowNotifications(!showNotifications); setShowProfile(false); }}
+                aria-label={t('common.notifications')}
+                onClick={() => { setShowNotifications(!showNotifications); setShowProfile(false); setShowLang(false); }}
               >
                 <Bell size={20} />
                 {unreadCount > 0 && <span style={styles.badge} />}
@@ -193,7 +264,7 @@ const Layout: React.FC = () => {
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                   }}>
                     <span style={{ fontSize: 15, fontWeight: 700, color: COLORS.primary }}>
-                      Notifications {unreadCount > 0 && <span style={{
+                      {t('common.notifications')} {unreadCount > 0 && <span style={{
                         fontSize: 12, backgroundColor: COLORS.red, color: '#fff',
                         padding: '2px 8px', borderRadius: 10, marginLeft: 6,
                       }}>{unreadCount}</span>}
@@ -202,7 +273,7 @@ const Layout: React.FC = () => {
                       <button onClick={markAllRead} style={{
                         background: 'none', border: 'none', color: '#1565C0',
                         fontSize: 12, fontWeight: 600, cursor: 'pointer',
-                      }}>Mark all read</button>
+                      }}>{t('common.markAllRead')}</button>
                     )}
                   </div>
                   <div style={{ maxHeight: 360, overflowY: 'auto' }}>
@@ -246,7 +317,7 @@ const Layout: React.FC = () => {
               <div
                 style={styles.avatar}
                 title="Admin"
-                onClick={() => { setShowProfile(!showProfile); setShowNotifications(false); }}
+                onClick={() => { setShowProfile(!showProfile); setShowNotifications(false); setShowLang(false); }}
               >
                 A
               </div>
@@ -260,7 +331,7 @@ const Layout: React.FC = () => {
                 }}>
                   <div style={{ padding: '14px 16px', borderBottom: '1px solid #F3F4F6' }}>
                     <div style={{ fontWeight: 600, color: COLORS.primary, fontSize: 14 }}>Joel Wasike</div>
-                    <div style={{ fontSize: 12, color: '#9CA3AF', marginTop: 2 }}>Super Admin</div>
+                    <div style={{ fontSize: 12, color: '#9CA3AF', marginTop: 2 }}>{t('common.superAdmin')}</div>
                   </div>
                   <div>
                     <button onClick={() => { navigate('/profile'); setShowProfile(false); }} style={{
@@ -272,7 +343,7 @@ const Layout: React.FC = () => {
                       onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#F9FAFB')}
                       onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
                     >
-                      <User size={16} color="#6B7280" /> My Profile
+                      <User size={16} color="#6B7280" /> {t('common.myProfile')}
                     </button>
                     <button onClick={() => { navigate('/settings'); setShowProfile(false); }} style={{
                       display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px',
@@ -283,7 +354,7 @@ const Layout: React.FC = () => {
                       onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#F9FAFB')}
                       onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
                     >
-                      <Settings size={16} color="#6B7280" /> Settings
+                      <Settings size={16} color="#6B7280" /> {t('common.settings')}
                     </button>
                     <div style={{ borderTop: '1px solid #F3F4F6' }}>
                       <button style={{
@@ -296,7 +367,7 @@ const Layout: React.FC = () => {
                         onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
                         onClick={() => { setShowProfile(false); logout(); }}
                       >
-                        <LogOut size={16} /> Log Out
+                        <LogOut size={16} /> {t('common.logOut')}
                       </button>
                     </div>
                   </div>

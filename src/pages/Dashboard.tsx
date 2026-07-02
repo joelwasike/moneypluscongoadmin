@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Users, Activity, DollarSign, TrendingUp } from 'lucide-react';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import api from '../services/api';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const NAVY = '#1B3A5C';
 const GREEN = '#43A047';
@@ -69,6 +70,7 @@ const Card: React.FC<{ title: string; children: React.ReactNode }> = ({ title, c
 );
 
 export default function Dashboard() {
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<any>(null);
@@ -79,7 +81,7 @@ export default function Dashboard() {
     const res = await api.dashboard();
     setLoading(false);
     if (!res?.success) {
-      setError(res?.message || 'Failed to load dashboard');
+      setError(res?.message || t('dashboard.failedToLoad'));
       setData(null);
       return;
     }
@@ -112,8 +114,8 @@ export default function Dashboard() {
     <div style={{ background: BG, minHeight: '100vh', padding: 32, fontFamily: FONT }}>
       <div style={{ marginBottom: 28, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16 }}>
         <div>
-          <h1 style={{ margin: 0, fontSize: 28, fontWeight: 800, color: NAVY }}>Dashboard</h1>
-          <p style={{ margin: '4px 0 0', fontSize: 14, color: '#7C8D9E' }}>Overview of Money+ Congo</p>
+          <h1 style={{ margin: 0, fontSize: 28, fontWeight: 800, color: NAVY }}>{t('dashboard.title')}</h1>
+          <p style={{ margin: '4px 0 0', fontSize: 14, color: '#7C8D9E' }}>{t('dashboard.subtitle')}</p>
         </div>
         <button
           onClick={load}
@@ -127,25 +129,25 @@ export default function Dashboard() {
             color: NAVY,
           }}
         >
-          Refresh
+          {t('common.refresh')}
         </button>
       </div>
 
       {(loading || error) && (
         <div style={{ marginBottom: 16, color: error ? '#C62828' : '#6B7280', fontWeight: 700 }}>
-          {error ? error : 'Loading…'}
+          {error ? error : t('common.loading')}
         </div>
       )}
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 24, marginBottom: 28 }}>
-        <StatCard title="Total Users" value={String(data?.total_users ?? '—')} icon={<Users size={24} color={NAVY} />} />
-        <StatCard title="Total Transactions" value={String(data?.total_transactions ?? '—')} icon={<Activity size={24} color={NAVY} />} />
-        <StatCard title="Transaction Volume" value={`${formatCurrency(Number(data?.total_volume || 0))} CDF`} icon={<DollarSign size={24} color={NAVY} />} />
-        <StatCard title="Revenue (Fees)" value={`${formatCurrency(Number(data?.total_fees || 0))} CDF`} icon={<TrendingUp size={24} color={NAVY} />} />
+        <StatCard title={t('dashboard.totalUsers')} value={String(data?.total_users ?? '—')} icon={<Users size={24} color={NAVY} />} />
+        <StatCard title={t('dashboard.totalTransactions')} value={String(data?.total_transactions ?? '—')} icon={<Activity size={24} color={NAVY} />} />
+        <StatCard title={t('dashboard.transactionVolume')} value={`${formatCurrency(Number(data?.total_volume || 0))} CDF`} icon={<DollarSign size={24} color={NAVY} />} />
+        <StatCard title={t('dashboard.revenue')} value={`${formatCurrency(Number(data?.total_fees || 0))} CDF`} icon={<TrendingUp size={24} color={NAVY} />} />
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 28 }}>
-        <Card title="Daily Volume (Last 7 days)">
+        <Card title={t('dashboard.dailyVolume')}>
           <ResponsiveContainer width="100%" height={280}>
             <AreaChart data={daily}>
               <defs>
@@ -163,7 +165,7 @@ export default function Dashboard() {
           </ResponsiveContainer>
         </Card>
 
-        <Card title="Transactions by Type">
+        <Card title={t('dashboard.byType')}>
           <ResponsiveContainer width="100%" height={280}>
             <PieChart>
               <Pie data={byType} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={95} label>
@@ -178,7 +180,7 @@ export default function Dashboard() {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
-        <Card title="Top Countries (Users)">
+        <Card title={t('dashboard.topCountries')}>
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={topCountries}>
               <CartesianGrid strokeDasharray="3 3" stroke="#E0E6ED" />
@@ -190,12 +192,12 @@ export default function Dashboard() {
           </ResponsiveContainer>
         </Card>
 
-        <Card title="Recent Transactions">
+        <Card title={t('dashboard.recentTransactions')}>
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
               <thead>
                 <tr style={{ backgroundColor: '#F9FAFB', borderBottom: '1px solid #E5E7EB' }}>
-                  {['ID', 'Type', 'Amount', 'Currency', 'Status', 'Date'].map((h) => (
+                  {[t('common.id'), t('common.type'), t('common.amount'), t('common.currency'), t('common.status'), t('common.date')].map((h) => (
                     <th key={h} style={{ padding: '10px 12px', textAlign: 'left', fontWeight: 700, color: '#6B7280', fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5, whiteSpace: 'nowrap' }}>{h}</th>
                   ))}
                 </tr>
@@ -227,7 +229,7 @@ export default function Dashboard() {
                 ))}
                 {!loading && !error && recentTx.length === 0 && (
                   <tr>
-                    <td colSpan={6} style={{ padding: 18, textAlign: 'center', color: '#9CA3AF' }}>No recent transactions.</td>
+                    <td colSpan={6} style={{ padding: 18, textAlign: 'center', color: '#9CA3AF' }}>{t('dashboard.noRecentTx')}</td>
                   </tr>
                 )}
               </tbody>

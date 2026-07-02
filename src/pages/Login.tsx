@@ -2,10 +2,17 @@ import React, { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '../components/Toast';
 import api from '../services/api';
+import { useLanguage } from '../contexts/LanguageContext';
+import { Language } from '../i18n/translations';
 
 const NAVY = '#1B3A5C';
 const GREEN = '#43A047';
 const FONT = "'Inter', sans-serif";
+
+const LANGUAGES: { code: Language; flag: string; label: string }[] = [
+  { code: 'en', flag: '🇬🇧', label: 'English' },
+  { code: 'fr', flag: '🇫🇷', label: 'Français' },
+];
 
 interface LoginProps {
   onLogin: (token?: string) => void;
@@ -13,6 +20,7 @@ interface LoginProps {
 
 export default function Login({ onLogin }: LoginProps) {
   const { showToast } = useToast();
+  const { lang, setLang, t } = useLanguage();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -24,7 +32,7 @@ export default function Login({ onLogin }: LoginProps) {
     setError('');
 
     if (!email.trim() || !password.trim()) {
-      setError('Please enter both email and password.');
+      setError(t('login.emailRequired'));
       return;
     }
 
@@ -32,7 +40,7 @@ export default function Login({ onLogin }: LoginProps) {
     try {
       const res = await api.login(email.trim(), password);
       if (!res?.success) {
-        setError(res?.message || 'Invalid email or password.');
+        setError(res?.message || t('login.invalidCredentials'));
         return;
       }
 
@@ -43,13 +51,13 @@ export default function Login({ onLogin }: LoginProps) {
         res?.access_token;
 
       if (!token || typeof token !== 'string') {
-        setError('Login succeeded but no token was returned by the server.');
+        setError(t('login.noToken'));
         return;
       }
 
       onLogin(token);
     } catch (e: any) {
-      setError(e?.message || 'Login failed. Please try again.');
+      setError(e?.message || t('login.loginFailed'));
     } finally {
       setLoading(false);
     }
@@ -58,9 +66,29 @@ export default function Login({ onLogin }: LoginProps) {
   return (
     <div style={{
       minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      backgroundColor: '#fff',
-      fontFamily: FONT,
+      backgroundColor: '#fff', fontFamily: FONT,
     }}>
+      {/* Language selector top-right */}
+      <div style={{ position: 'fixed', top: 20, right: 24, display: 'flex', gap: 8 }}>
+        {LANGUAGES.map(l => (
+          <button
+            key={l.code}
+            onClick={() => setLang(l.code)}
+            title={l.label}
+            style={{
+              width: 36, height: 36, borderRadius: '50%',
+              border: lang === l.code ? `2px solid ${NAVY}` : '2px solid #E2E8F0',
+              background: lang === l.code ? '#F0F4F8' : '#F8FAFC',
+              cursor: 'pointer', fontSize: 20,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              padding: 0, lineHeight: 1,
+            }}
+          >
+            {l.flag}
+          </button>
+        ))}
+      </div>
+
       <div style={{
         width: 420, backgroundColor: '#fff', borderRadius: 20,
         boxShadow: '0 4px 24px rgba(0,0,0,0.08)', border: '1px solid #E5E7EB', overflow: 'hidden',
@@ -79,10 +107,10 @@ export default function Login({ onLogin }: LoginProps) {
             }}
           />
           <h1 style={{ margin: '16px 0 0', fontSize: 22, fontWeight: 700, color: '#fff' }}>
-            Admin Dashboard
+            {t('login.title')}
           </h1>
           <p style={{ margin: '6px 0 0', fontSize: 13, color: 'rgba(255,255,255,0.6)' }}>
-            Sign in to manage your platform
+            {t('login.subtitle')}
           </p>
         </div>
 
@@ -103,13 +131,13 @@ export default function Login({ onLogin }: LoginProps) {
               fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 8,
               display: 'block',
             }}>
-              Email Address
+              {t('login.emailLabel')}
             </label>
             <div style={{ position: 'relative' }}>
               <Mail size={18} color="#9CA3AF" style={{ position: 'absolute', left: 14, top: 12 }} />
               <input
                 type="email"
-                placeholder="admin@moneyplus.cd"
+                placeholder={t('login.emailPlaceholder')}
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 style={{
@@ -129,20 +157,18 @@ export default function Login({ onLogin }: LoginProps) {
               fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 8,
               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
             }}>
-              Password
-              <span style={{
-                fontSize: 12, color: GREEN, fontWeight: 500, cursor: 'pointer',
-              }}
-                onClick={() => showToast('Password reset link sent to your email.', 'info')}
+              {t('login.passwordLabel')}
+              <span style={{ fontSize: 12, color: GREEN, fontWeight: 500, cursor: 'pointer' }}
+                onClick={() => showToast(t('login.forgotMessage'), 'info')}
               >
-                Forgot password?
+                {t('login.forgotPassword')}
               </span>
             </label>
             <div style={{ position: 'relative' }}>
               <Lock size={18} color="#9CA3AF" style={{ position: 'absolute', left: 14, top: 12 }} />
               <input
                 type={showPassword ? 'text' : 'password'}
-                placeholder="Enter your password"
+                placeholder={t('login.passwordPlaceholder')}
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 style={{
@@ -177,13 +203,11 @@ export default function Login({ onLogin }: LoginProps) {
               opacity: loading ? 0.7 : 1, transition: 'opacity 0.2s',
             }}
           >
-            {loading ? 'Signing in...' : 'Sign In'}
+            {loading ? t('login.signingIn') : t('login.signIn')}
           </button>
 
-          <div style={{
-            marginTop: 24, textAlign: 'center', fontSize: 12, color: '#9CA3AF',
-          }}>
-            Money+ Congo Admin Panel v1.0
+          <div style={{ marginTop: 24, textAlign: 'center', fontSize: 12, color: '#9CA3AF' }}>
+            {t('login.version')}
           </div>
         </form>
       </div>

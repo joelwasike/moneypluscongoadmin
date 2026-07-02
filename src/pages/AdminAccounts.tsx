@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { UserCog, Shield, Eye, ToggleLeft, ToggleRight, Plus, Search, X, ArrowLeft, Mail, Calendar, Clock } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const NAVY = '#1B3A5C';
 const GREEN = '#43A047';
@@ -25,13 +26,6 @@ const initialAdmins: Admin[] = [
   { id: 'ADM006', name: 'Gracia Ilunga', email: 'gracia@moneyplus.cd', role: 'viewer', status: 'active', twoFactor: false, lastLogin: '2026-04-11 07:00', createdAt: '2026-02-28' },
 ];
 
-const roleBadge: Record<Admin['role'], { bg: string; color: string; label: string }> = {
-  super_admin: { bg: '#EDE7F6', color: '#5E35B1', label: 'Super Admin' },
-  admin: { bg: '#E3F2FD', color: '#1565C0', label: 'Admin' },
-  support: { bg: '#FFF3E0', color: '#E65100', label: 'Support' },
-  viewer: { bg: '#ECEFF1', color: '#546E7A', label: 'Viewer' },
-};
-
 const statusBadge: Record<Admin['status'], { bg: string; color: string }> = {
   active: { bg: '#E8F5E9', color: '#2E7D32' },
   disabled: { bg: '#FFEBEE', color: '#C62828' },
@@ -39,6 +33,15 @@ const statusBadge: Record<Admin['status'], { bg: string; color: string }> = {
 
 // ─── Admin Detail View ───
 const AdminDetail: React.FC<{ admin: Admin; onBack: () => void; onToggleStatus: (id: string) => void }> = ({ admin, onBack, onToggleStatus }) => {
+  const { t } = useLanguage();
+
+  const roleBadge: Record<Admin['role'], { bg: string; color: string; label: string }> = {
+    super_admin: { bg: '#EDE7F6', color: '#5E35B1', label: t('adminAccounts.roles.super_admin') },
+    admin: { bg: '#E3F2FD', color: '#1565C0', label: t('adminAccounts.roles.admin') },
+    support: { bg: '#FFF3E0', color: '#E65100', label: t('adminAccounts.roles.support') },
+    viewer: { bg: '#ECEFF1', color: '#546E7A', label: t('adminAccounts.roles.viewer') },
+  };
+
   return (
     <div style={{ fontFamily: FONT, padding: 32, minHeight: '100vh' }}>
       <button onClick={onBack} style={{
@@ -47,7 +50,7 @@ const AdminDetail: React.FC<{ admin: Admin; onBack: () => void; onToggleStatus: 
         fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: FONT,
         boxShadow: '0 1px 3px rgba(0,0,0,0.06)', marginBottom: 24,
       }}>
-        <ArrowLeft size={16} /> Back to Admin Accounts
+        <ArrowLeft size={16} /> {t('common.back')}
       </button>
 
       {/* Header Card */}
@@ -77,14 +80,14 @@ const AdminDetail: React.FC<{ admin: Admin; onBack: () => void; onToggleStatus: 
             <span style={{
               display: 'inline-block', padding: '6px 14px', borderRadius: 20, fontSize: 13,
               fontWeight: 600, backgroundColor: statusBadge[admin.status].bg, color: statusBadge[admin.status].color,
-            }}>{admin.status === 'active' ? 'Active' : 'Disabled'}</span>
+            }}>{admin.status === 'active' ? t('common.active') : t('common.disabled')}</span>
             <button onClick={() => onToggleStatus(admin.id)} style={{
               padding: '8px 16px', borderRadius: 8, border: 'none', fontSize: 13, fontWeight: 600,
               cursor: 'pointer', fontFamily: FONT,
               backgroundColor: admin.status === 'active' ? '#FFEBEE' : '#E8F5E9',
               color: admin.status === 'active' ? '#C62828' : '#2E7D32',
             }}>
-              {admin.status === 'active' ? 'Disable Account' : 'Enable Account'}
+              {admin.status === 'active' ? t('adminAccounts.detail.disableAccount') : t('adminAccounts.detail.enableAccount')}
             </button>
           </div>
         </div>
@@ -93,12 +96,12 @@ const AdminDetail: React.FC<{ admin: Admin; onBack: () => void; onToggleStatus: 
       {/* Info Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20, marginBottom: 24 }}>
         {[
-          { icon: <Mail size={16} color={GREEN} />, label: 'Email', value: admin.email },
-          { icon: <Shield size={16} color={GREEN} />, label: 'Role', value: roleBadge[admin.role].label },
-          { icon: <Shield size={16} color={GREEN} />, label: '2FA Status', value: admin.twoFactor ? 'Enabled' : 'Disabled' },
-          { icon: <Calendar size={16} color={GREEN} />, label: 'Created', value: admin.createdAt },
-          { icon: <Clock size={16} color={GREEN} />, label: 'Last Login', value: admin.lastLogin },
-          { icon: <UserCog size={16} color={GREEN} />, label: 'Account Status', value: admin.status === 'active' ? 'Active' : 'Disabled' },
+          { icon: <Mail size={16} color={GREEN} />, label: t('adminAccounts.detail.email'), value: admin.email },
+          { icon: <Shield size={16} color={GREEN} />, label: t('adminAccounts.detail.role'), value: roleBadge[admin.role].label },
+          { icon: <Shield size={16} color={GREEN} />, label: t('adminAccounts.detail.twoFactor'), value: admin.twoFactor ? t('adminAccounts.detail.twoFactorEnabled') : t('adminAccounts.detail.twoFactorDisabled') },
+          { icon: <Calendar size={16} color={GREEN} />, label: t('adminAccounts.detail.created'), value: admin.createdAt },
+          { icon: <Clock size={16} color={GREEN} />, label: t('adminAccounts.detail.lastLogin'), value: admin.lastLogin },
+          { icon: <UserCog size={16} color={GREEN} />, label: t('adminAccounts.detail.accountStatus'), value: admin.status === 'active' ? t('common.active') : t('common.disabled') },
         ].map(item => (
           <div key={item.label} style={{
             backgroundColor: '#fff', borderRadius: 12, padding: '16px 20px',
@@ -119,7 +122,7 @@ const AdminDetail: React.FC<{ admin: Admin; onBack: () => void; onToggleStatus: 
         boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
       }}>
         <h3 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 700, color: NAVY, display: 'flex', alignItems: 'center', gap: 10 }}>
-          <Shield size={18} color={GREEN} /> Permissions
+          <Shield size={18} color={GREEN} /> {t('adminAccounts.detail.permissions')}
         </h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
           {[
@@ -151,6 +154,7 @@ const AdminDetail: React.FC<{ admin: Admin; onBack: () => void; onToggleStatus: 
 
 // ─── Add Admin Modal ───
 const AddAdminModal: React.FC<{ onClose: () => void; onAdd: (admin: Admin) => void; nextId: string }> = ({ onClose, onAdd, nextId }) => {
+  const { t } = useLanguage();
   const [form, setForm] = useState({ name: '', email: '', role: 'admin' as Admin['role'] });
 
   const handleSubmit = () => {
@@ -183,7 +187,7 @@ const AddAdminModal: React.FC<{ onClose: () => void; onAdd: (admin: Admin) => vo
         boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
       }} onClick={e => e.stopPropagation()}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: NAVY }}>Add New Admin</h2>
+          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: NAVY }}>{t('adminAccounts.addAdmin')}</h2>
           <button onClick={onClose} style={{
             background: 'none', border: 'none', cursor: 'pointer', color: '#6B7280', padding: 4,
           }}><X size={20} /></button>
@@ -201,12 +205,12 @@ const AddAdminModal: React.FC<{ onClose: () => void; onAdd: (admin: Admin) => vo
               onChange={e => setForm({ ...form, email: e.target.value })} />
           </div>
           <div>
-            <label style={{ fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6, display: 'block' }}>Role</label>
+            <label style={{ fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6, display: 'block' }}>{t('adminAccounts.detail.role')}</label>
             <select style={{ ...inputStyle, backgroundColor: '#fff', cursor: 'pointer' }} value={form.role}
               onChange={e => setForm({ ...form, role: e.target.value as Admin['role'] })}>
-              <option value="admin">Admin</option>
-              <option value="support">Support</option>
-              <option value="viewer">Viewer</option>
+              <option value="admin">{t('adminAccounts.roles.admin')}</option>
+              <option value="support">{t('adminAccounts.roles.support')}</option>
+              <option value="viewer">{t('adminAccounts.roles.viewer')}</option>
             </select>
           </div>
         </div>
@@ -216,14 +220,14 @@ const AddAdminModal: React.FC<{ onClose: () => void; onAdd: (admin: Admin) => vo
             padding: '10px 20px', borderRadius: 8, border: '1px solid #E5E7EB',
             backgroundColor: '#fff', color: '#374151', fontSize: 14, fontWeight: 600,
             cursor: 'pointer', fontFamily: FONT,
-          }}>Cancel</button>
+          }}>{t('common.cancel')}</button>
           <button onClick={handleSubmit} style={{
             padding: '10px 20px', borderRadius: 8, border: 'none',
             backgroundColor: NAVY, color: '#fff', fontSize: 14, fontWeight: 600,
             cursor: 'pointer', fontFamily: FONT,
             opacity: form.name.trim() && form.email.trim() ? 1 : 0.5,
           }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Plus size={16} /> Add Admin</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Plus size={16} /> {t('adminAccounts.addAdmin')}</span>
           </button>
         </div>
       </div>
@@ -232,11 +236,19 @@ const AddAdminModal: React.FC<{ onClose: () => void; onAdd: (admin: Admin) => vo
 };
 
 export default function AdminAccounts() {
+  const { t } = useLanguage();
   const [adminList, setAdminList] = useState<Admin[]>(initialAdmins);
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<'all' | Admin['role']>('all');
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedAdmin, setSelectedAdmin] = useState<Admin | null>(null);
+
+  const roleBadge: Record<Admin['role'], { bg: string; color: string; label: string }> = {
+    super_admin: { bg: '#EDE7F6', color: '#5E35B1', label: t('adminAccounts.roles.super_admin') },
+    admin: { bg: '#E3F2FD', color: '#1565C0', label: t('adminAccounts.roles.admin') },
+    support: { bg: '#FFF3E0', color: '#E65100', label: t('adminAccounts.roles.support') },
+    viewer: { bg: '#ECEFF1', color: '#546E7A', label: t('adminAccounts.roles.viewer') },
+  };
 
   const filtered = adminList.filter(a => {
     const matchSearch = searchQuery === '' ||
@@ -268,17 +280,17 @@ export default function AdminAccounts() {
   }
 
   const stats = [
-    { label: 'Total Admins', value: adminList.length, icon: <UserCog size={22} color="#fff" />, bg: NAVY },
-    { label: 'Active', value: adminList.filter(a => a.status === 'active').length, icon: <Shield size={22} color="#fff" />, bg: GREEN },
-    { label: 'With 2FA', value: adminList.filter(a => a.twoFactor).length, icon: <Shield size={22} color="#fff" />, bg: '#1565C0' },
-    { label: 'Disabled', value: adminList.filter(a => a.status === 'disabled').length, icon: <ToggleLeft size={22} color="#fff" />, bg: '#C62828' },
+    { label: t('adminAccounts.title'), value: adminList.length, icon: <UserCog size={22} color="#fff" />, bg: NAVY },
+    { label: t('common.active'), value: adminList.filter(a => a.status === 'active').length, icon: <Shield size={22} color="#fff" />, bg: GREEN },
+    { label: t('adminAccounts.columns.twoFactor'), value: adminList.filter(a => a.twoFactor).length, icon: <Shield size={22} color="#fff" />, bg: '#1565C0' },
+    { label: t('common.disabled'), value: adminList.filter(a => a.status === 'disabled').length, icon: <ToggleLeft size={22} color="#fff" />, bg: '#C62828' },
   ];
 
   return (
     <div style={{ fontFamily: FONT, padding: 32, minHeight: '100vh' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28 }}>
         <div>
-          <h1 style={{ margin: 0, fontSize: 28, fontWeight: 700, color: NAVY }}>Admin Accounts</h1>
+          <h1 style={{ margin: 0, fontSize: 28, fontWeight: 700, color: NAVY }}>{t('adminAccounts.title')}</h1>
           <p style={{ margin: '4px 0 0', fontSize: 14, color: '#6B7280' }}>Manage administrator access and permissions</p>
         </div>
         <button onClick={() => setShowAddModal(true)} style={{
@@ -286,7 +298,7 @@ export default function AdminAccounts() {
           border: 'none', background: NAVY, color: '#fff', fontSize: 14, fontWeight: 600,
           cursor: 'pointer', fontFamily: FONT,
         }}>
-          <Plus size={16} /> Add Admin
+          <Plus size={16} /> {t('adminAccounts.addAdmin')}
         </button>
       </div>
 
@@ -336,10 +348,10 @@ export default function AdminAccounts() {
           }}
         >
           <option value="all">All Roles</option>
-          <option value="super_admin">Super Admin</option>
-          <option value="admin">Admin</option>
-          <option value="support">Support</option>
-          <option value="viewer">Viewer</option>
+          <option value="super_admin">{t('adminAccounts.roles.super_admin')}</option>
+          <option value="admin">{t('adminAccounts.roles.admin')}</option>
+          <option value="support">{t('adminAccounts.roles.support')}</option>
+          <option value="viewer">{t('adminAccounts.roles.viewer')}</option>
         </select>
       </div>
 
@@ -349,7 +361,15 @@ export default function AdminAccounts() {
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
             <thead>
               <tr style={{ backgroundColor: '#F9FAFB', borderBottom: '1px solid #E5E7EB' }}>
-                {['ID', 'Admin', 'Role', '2FA', 'Status', 'Last Login', 'Actions'].map(h => (
+                {[
+                  'ID',
+                  t('adminAccounts.columns.admin'),
+                  t('adminAccounts.columns.role'),
+                  t('adminAccounts.columns.twoFactor'),
+                  t('adminAccounts.columns.status'),
+                  t('adminAccounts.columns.lastLogin'),
+                  t('adminAccounts.columns.actions'),
+                ].map(h => (
                   <th key={h} style={{
                     padding: '12px 16px', textAlign: 'left', fontWeight: 600, color: '#6B7280',
                     fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5, whiteSpace: 'nowrap',
@@ -381,14 +401,14 @@ export default function AdminAccounts() {
                       fontWeight: 600,
                       backgroundColor: admin.twoFactor ? '#E8F5E9' : '#FFF3E0',
                       color: admin.twoFactor ? '#2E7D32' : '#E65100',
-                    }}>{admin.twoFactor ? 'Enabled' : 'Disabled'}</span>
+                    }}>{admin.twoFactor ? t('adminAccounts.detail.twoFactorEnabled') : t('adminAccounts.detail.twoFactorDisabled')}</span>
                   </td>
                   <td style={{ padding: '14px 16px' }}>
                     <span style={{
                       display: 'inline-block', padding: '4px 10px', borderRadius: 20, fontSize: 12,
                       fontWeight: 600, backgroundColor: statusBadge[admin.status].bg,
                       color: statusBadge[admin.status].color,
-                    }}>{admin.status === 'active' ? 'Active' : 'Disabled'}</span>
+                    }}>{admin.status === 'active' ? t('common.active') : t('common.disabled')}</span>
                   </td>
                   <td style={{ padding: '14px 16px', color: '#374151', fontSize: 13 }}>{admin.lastLogin}</td>
                   <td style={{ padding: '14px 16px' }}>
@@ -397,9 +417,9 @@ export default function AdminAccounts() {
                         display: 'inline-flex', alignItems: 'center', gap: 4, padding: '6px 12px',
                         border: `1px solid ${NAVY}`, borderRadius: 6, backgroundColor: 'transparent',
                         color: NAVY, fontSize: 12, fontWeight: 600, fontFamily: FONT, cursor: 'pointer',
-                      }}><Eye size={14} /> View</button>
+                      }}><Eye size={14} /> {t('common.view')}</button>
                       <button onClick={() => handleToggleStatus(admin.id)}
-                        title={admin.status === 'active' ? 'Disable' : 'Enable'} style={{
+                        title={admin.status === 'active' ? t('common.disabled') : t('common.active')} style={{
                         display: 'inline-flex', alignItems: 'center', padding: '6px 8px', border: 'none',
                         borderRadius: 6,
                         backgroundColor: admin.status === 'active' ? '#E8F5E9' : '#FFEBEE',
