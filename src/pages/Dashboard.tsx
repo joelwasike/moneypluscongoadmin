@@ -18,7 +18,7 @@ const statusColors: Record<string, { bg: string; text: string }> = {
   cancelled: { bg: '#F5F5F5', text: '#9E9E9E' },
 };
 
-const formatCurrency = (value: number): string => value.toLocaleString('fr-CD');
+const formatCurrency = (value: number): string => value.toLocaleString('en-US');
 
 const StatCard: React.FC<{ title: string; value: string; icon: React.ReactNode }> = ({ title, value, icon }) => {
   return (
@@ -142,8 +142,8 @@ export default function Dashboard() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 24, marginBottom: 28 }}>
         <StatCard title={t('dashboard.totalUsers')} value={String(data?.total_users ?? '—')} icon={<Users size={24} color={NAVY} />} />
         <StatCard title={t('dashboard.totalTransactions')} value={String(data?.total_transactions ?? '—')} icon={<Activity size={24} color={NAVY} />} />
-        <StatCard title={t('dashboard.transactionVolume')} value={`${formatCurrency(Number(data?.total_volume || 0))} CDF`} icon={<DollarSign size={24} color={NAVY} />} />
-        <StatCard title={t('dashboard.revenue')} value={`${formatCurrency(Number(data?.total_fees || 0))} CDF`} icon={<TrendingUp size={24} color={NAVY} />} />
+        <StatCard title={t('dashboard.transactionVolume')} value={`${formatCurrency(Number(data?.total_volume || 0))} XAF`} icon={<DollarSign size={24} color={NAVY} />} />
+        <StatCard title={t('dashboard.revenue')} value={`${formatCurrency(Number(data?.total_fees || 0))} XAF`} icon={<TrendingUp size={24} color={NAVY} />} />
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 28 }}>
@@ -207,7 +207,7 @@ export default function Dashboard() {
                   <tr key={t.id} style={{ borderBottom: '1px solid #F3F4F6' }}>
                     <td style={{ padding: '10px 12px', fontWeight: 800, color: NAVY, whiteSpace: 'nowrap' }}>#{t.id}</td>
                     <td style={{ padding: '10px 12px', color: '#374151', whiteSpace: 'nowrap' }}>{t.type}</td>
-                    <td style={{ padding: '10px 12px', fontWeight: 700, color: '#1F2937', whiteSpace: 'nowrap' }}>{Number(t.amount || 0).toLocaleString('fr-CD')}</td>
+                    <td style={{ padding: '10px 12px', fontWeight: 700, color: '#1F2937', whiteSpace: 'nowrap' }}>{Number(t.amount || 0).toLocaleString('en-US')}</td>
                     <td style={{ padding: '10px 12px', color: '#6B7280', whiteSpace: 'nowrap' }}>{t.currency}</td>
                     <td style={{ padding: '10px 12px' }}>
                       <span style={{
