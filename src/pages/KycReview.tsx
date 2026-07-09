@@ -306,7 +306,7 @@ const DetailModal: React.FC<{
               style={{
                 width: '100%', minHeight: 72, padding: '10px 12px',
                 border: '1px solid #D1D5DB', borderRadius: 8, fontSize: 13,
-                fontFamily: 'Inter, sans-serif', resize: 'vertical', outline: 'none',
+                fontFamily: 'Poppins, sans-serif', resize: 'vertical', outline: 'none',
                 boxSizing: 'border-box', marginBottom: 12,
               }}
             />
@@ -425,7 +425,7 @@ const KycReview: React.FC = () => {
   const ROW_HOVER: React.CSSProperties = { cursor: 'pointer' };
 
   return (
-    <div style={{ padding: 32, background: '#F5F7FA', minHeight: '100vh', fontFamily: 'Inter, sans-serif' }}>
+    <div style={{ padding: 32, background: '#F5F7FA', minHeight: '100vh', fontFamily: 'Poppins, sans-serif' }}>
       <h1 style={{ fontSize: 28, fontWeight: 700, color: '#1B3A5C', margin: 0 }}>{t('kyc.title')}</h1>
       <p style={{ fontSize: 14, color: '#6B7280', marginTop: 4, marginBottom: 24 }}>
         Review and manage identity and business verification submissions
@@ -435,7 +435,7 @@ const KycReview: React.FC = () => {
       <div style={{ display: 'flex', gap: 4, marginBottom: 24, borderBottom: '2px solid #E5E7EB' }}>
         {(['kyc', 'kyb'] as Tab[]).map(tabKey => (
           <button key={tabKey} onClick={() => setTab(tabKey)} style={{
-            padding: '10px 20px', border: 'none', background: 'transparent', fontFamily: 'Inter, sans-serif',
+            padding: '10px 20px', border: 'none', background: 'transparent', fontFamily: 'Poppins, sans-serif',
             fontSize: 14, fontWeight: tab === tabKey ? 700 : 500, color: tab === tabKey ? '#1B3A5C' : '#6B7280',
             cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
             borderBottom: tab === tabKey ? '2px solid #1B3A5C' : '2px solid transparent', marginBottom: -2,

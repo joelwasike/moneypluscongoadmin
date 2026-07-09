@@ -132,6 +132,13 @@ export const translations = {
     users: {
       title: 'User Management',
       searchPlaceholder: 'Search users...',
+      addUser: 'Add User',
+      addUserDesc: 'Create a new user account',
+      countryCode: 'Country Code',
+      password: 'Password',
+      avatarUrl: 'Avatar URL',
+      kycPhotos: 'KYC Photos',
+      kycBack: 'ID Back',
       totalUsers: 'Total Users',
       activeUsers: 'Active Users',
       suspended: 'Suspended',
@@ -600,12 +607,13 @@ export const translations = {
       },
       roles: {
         super_admin: 'Super Admin',
-        admin: 'Admin',
-        support: 'Support',
-        viewer: 'Viewer',
+        finance: 'Finance Team',
+        customer_service: 'Customer Service',
+        compliance: 'Compliance Team',
       },
       detail: {
         email: 'Email',
+        password: 'Password',
         role: 'Role',
         twoFactor: '2FA Status',
         created: 'Created',
@@ -617,6 +625,10 @@ export const translations = {
         resetPassword: 'Reset Password',
         twoFactorEnabled: 'Enabled',
         twoFactorDisabled: 'Disabled',
+      },
+      errors: {
+        fillAllFields: 'Please fill in name, email, and password.',
+        failedToCreate: 'Failed to create admin.',
       },
     },
     auditLog: {
@@ -808,6 +820,13 @@ export const translations = {
     users: {
       title: 'Gestion des utilisateurs',
       searchPlaceholder: 'Rechercher des utilisateurs...',
+      addUser: 'Ajouter un utilisateur',
+      addUserDesc: 'Créer un nouveau compte utilisateur',
+      countryCode: 'Indicatif du pays',
+      password: 'Mot de passe',
+      avatarUrl: "URL de l'avatar",
+      kycPhotos: 'Photos KYC',
+      kycBack: 'Dos de la pièce',
       totalUsers: 'Utilisateurs totaux',
       activeUsers: 'Utilisateurs actifs',
       suspended: 'Suspendus',
@@ -1276,12 +1295,13 @@ export const translations = {
       },
       roles: {
         super_admin: 'Super Admin',
-        admin: 'Administrateur',
-        support: 'Support',
-        viewer: 'Lecteur',
+        finance: 'Équipe finance',
+        customer_service: 'Service client',
+        compliance: 'Équipe conformité',
       },
       detail: {
         email: 'Email',
+        password: 'Mot de passe',
         role: 'Rôle',
         twoFactor: 'Statut 2FA',
         created: 'Créé le',
@@ -1293,6 +1313,10 @@ export const translations = {
         resetPassword: 'Réinitialiser le mot de passe',
         twoFactorEnabled: 'Activé',
         twoFactorDisabled: 'Désactivé',
+      },
+      errors: {
+        fillAllFields: "Veuillez renseigner le nom, l'email et le mot de passe.",
+        failedToCreate: "Échec de la création de l'admin.",
       },
     },
     auditLog: {

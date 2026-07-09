@@ -63,7 +63,7 @@ const ToastItem: React.FC<{ toast: Toast; onDismiss: (id: number) => void }> = (
         boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
         minWidth: 320,
         maxWidth: 420,
-        fontFamily: "'Inter', sans-serif",
+        fontFamily: "'Poppins', sans-serif",
         animation: exiting ? 'toastOut 0.3s ease forwards' : 'toastIn 0.3s ease forwards',
       }}
     >

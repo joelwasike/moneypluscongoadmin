@@ -4,10 +4,11 @@ import { useToast } from '../components/Toast';
 import api from '../services/api';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Language } from '../i18n/translations';
+import { AdminRole, normalizeAdminRole } from '../auth/adminAccess';
 
 const NAVY = '#1B3A5C';
 const GREEN = '#43A047';
-const FONT = "'Inter', sans-serif";
+const FONT = "'Poppins', sans-serif";
 
 const LANGUAGES: { code: Language; flag: string; label: string }[] = [
   { code: 'en', flag: '🇬🇧', label: 'English' },
@@ -15,7 +16,7 @@ const LANGUAGES: { code: Language; flag: string; label: string }[] = [
 ];
 
 interface LoginProps {
-  onLogin: (token?: string) => void;
+  onLogin: (token?: string, role?: AdminRole) => void;
 }
 
 export default function Login({ onLogin }: LoginProps) {
@@ -49,13 +50,14 @@ export default function Login({ onLogin }: LoginProps) {
         res?.data?.access_token ??
         res?.token ??
         res?.access_token;
+      const adminRole = normalizeAdminRole(res?.data?.admin?.role);
 
       if (!token || typeof token !== 'string') {
         setError(t('login.noToken'));
         return;
       }
 
-      onLogin(token);
+      onLogin(token, adminRole);
     } catch (e: any) {
       setError(e?.message || t('login.loginFailed'));
     } finally {

@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { User, Mail, Shield, Calendar, Clock, Key, Save, Camera } from 'lucide-react';
 import { useToast } from '../components/Toast';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useAuth } from '../App';
+import { ADMIN_ROLE_LABELS } from '../auth/adminAccess';
 
 const NAVY = '#1B3A5C';
 const GREEN = '#43A047';
-const FONT = "'Inter', sans-serif";
+const FONT = "'Poppins', sans-serif";
 
 const Toggle = ({ on, onToggle }: { on: boolean; onToggle: () => void }) => (
   <div
@@ -38,11 +40,12 @@ const rowStyle: React.CSSProperties = {
 export default function Profile() {
   const { t } = useLanguage();
   const { showToast } = useToast();
+  const { role } = useAuth();
   const [profile, setProfile] = useState({
     name: 'Joel Wasike',
     email: 'joel@moneyplus.cd',
     phone: '+243 812 000 001',
-    role: 'Super Admin',
+    role: ADMIN_ROLE_LABELS[role],
     createdAt: '2025-06-01',
     lastLogin: '2026-04-11 08:30',
   });

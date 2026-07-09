@@ -4,7 +4,7 @@ import { countries as initialCountries, Country } from '../data/mockData';
 import { useLanguage } from '../contexts/LanguageContext';
 
 const s = {
-  page: { padding: 32, fontFamily: 'Inter, sans-serif' } as React.CSSProperties,
+  page: { padding: 32, fontFamily: 'Poppins, sans-serif' } as React.CSSProperties,
   header: { marginBottom: 28 } as React.CSSProperties,
   title: { fontSize: 26, fontWeight: 800, color: '#1B3A5C', margin: 0 } as React.CSSProperties,
   subtitle: { fontSize: 14, color: '#7C8D9E', marginTop: 4 } as React.CSSProperties,
@@ -14,7 +14,7 @@ const s = {
   statValue: { fontSize: 24, fontWeight: 700, color: '#1B3A5C' } as React.CSSProperties,
   toolbar: { display: 'flex', gap: 12, marginBottom: 20, alignItems: 'center' } as React.CSSProperties,
   searchBox: { flex: 1, display: 'flex', alignItems: 'center', background: '#fff', borderRadius: 12, padding: '10px 16px', border: '1px solid #E0E6ED' } as React.CSSProperties,
-  searchInput: { border: 'none', outline: 'none', flex: 1, fontSize: 14, fontFamily: 'Inter, sans-serif', marginLeft: 8 } as React.CSSProperties,
+  searchInput: { border: 'none', outline: 'none', flex: 1, fontSize: 14, fontFamily: 'Poppins, sans-serif', marginLeft: 8 } as React.CSSProperties,
   table: { width: '100%', borderCollapse: 'collapse' as const, background: '#fff', borderRadius: 16, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' },
   th: { textAlign: 'left' as const, padding: '14px 16px', fontSize: 12, fontWeight: 600, color: '#7C8D9E', borderBottom: '1px solid #E0E6ED', background: '#F8FAFB' },
   td: { padding: '14px 16px', fontSize: 14, color: '#1B3A5C', borderBottom: '1px solid #F0F2F5' },

@@ -41,11 +41,16 @@ const api = {
 
   // Dashboard
   dashboard: () => request('GET', '/dashboard'),
+  dashboardFinance: () => request('GET', '/dashboard/finance'),
+  dashboardCompliance: () => request('GET', '/dashboard/compliance'),
+  dashboardSupport: () => request('GET', '/dashboard/support'),
 
   // Users
   listUsers: (params = '') => request('GET', `/users${params ? '?' + params : ''}`),
   getUser: (id: number) => request('GET', `/users/${id}`),
+  createUser: (data: any) => request('POST', '/users', data),
   updateUser: (id: number, data: any) => request('PUT', `/users/${id}`, data),
+  deleteUser: (id: number) => request('DELETE', `/users/${id}`),
 
   // Agents
   listAgents: () => request('GET', '/agents'),

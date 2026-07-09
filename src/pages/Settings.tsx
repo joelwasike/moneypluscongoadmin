@@ -4,7 +4,7 @@ import { useToast } from '../components/Toast';
 import { useLanguage } from '../contexts/LanguageContext';
 
 const s = {
-  page: { padding: 32, fontFamily: 'Inter, sans-serif' } as React.CSSProperties,
+  page: { padding: 32, fontFamily: 'Poppins, sans-serif' } as React.CSSProperties,
   title: { fontSize: 26, fontWeight: 800, color: '#1B3A5C', margin: 0 } as React.CSSProperties,
   subtitle: { fontSize: 14, color: '#7C8D9E', marginTop: 4, marginBottom: 28 } as React.CSSProperties,
   grid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 } as React.CSSProperties,
@@ -22,10 +22,10 @@ const s = {
     position: 'absolute', top: 3, left: on ? 23 : 3, transition: 'left 0.2s',
     boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
   }),
-  input: { border: '1px solid #E0E6ED', borderRadius: 10, padding: '8px 14px', fontSize: 14, fontFamily: 'Inter, sans-serif', width: 120, textAlign: 'right' as const, outline: 'none' } as React.CSSProperties,
-  select: { border: '1px solid #E0E6ED', borderRadius: 10, padding: '8px 14px', fontSize: 14, fontFamily: 'Inter, sans-serif', outline: 'none', background: '#fff' } as React.CSSProperties,
+  input: { border: '1px solid #E0E6ED', borderRadius: 10, padding: '8px 14px', fontSize: 14, fontFamily: 'Poppins, sans-serif', width: 120, textAlign: 'right' as const, outline: 'none' } as React.CSSProperties,
+  select: { border: '1px solid #E0E6ED', borderRadius: 10, padding: '8px 14px', fontSize: 14, fontFamily: 'Poppins, sans-serif', outline: 'none', background: '#fff' } as React.CSSProperties,
   saveBtn: { marginTop: 28, display: 'flex', justifyContent: 'flex-end' } as React.CSSProperties,
-  btn: { display: 'flex', alignItems: 'center', gap: 8, padding: '12px 28px', borderRadius: 12, border: 'none', background: '#1B3A5C', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter, sans-serif' } as React.CSSProperties,
+  btn: { display: 'flex', alignItems: 'center', gap: 8, padding: '12px 28px', borderRadius: 12, border: 'none', background: '#1B3A5C', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'Poppins, sans-serif' } as React.CSSProperties,
   fullCard: { gridColumn: '1 / -1', background: '#fff', borderRadius: 16, padding: 24, boxShadow: '0 2px 8px rgba(0,0,0,0.04)' } as React.CSSProperties,
 };
 

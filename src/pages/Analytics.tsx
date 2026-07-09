@@ -3,11 +3,13 @@ import { Activity, Globe, TrendingUp, Users } from 'lucide-react';
 import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import api from '../services/api';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useAuth } from '../App';
+import { AdminRole } from '../auth/adminAccess';
 
 const NAVY = '#1B3A5C';
 const GREEN = '#43A047';
 const BG = '#F5F7FA';
-const FONT = 'Inter, sans-serif';
+const FONT = 'Poppins, sans-serif';
 
 const COLORS = [NAVY, GREEN, '#66BB6A', '#7C8D9E', '#AAB8C6', '#FF9800'];
 
@@ -20,6 +22,7 @@ const Card: React.FC<{ title: string; children: React.ReactNode }> = ({ title, c
 
 export default function Analytics() {
   const { t } = useLanguage();
+  const { role } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<any>(null);
@@ -27,7 +30,13 @@ export default function Analytics() {
   const load = async () => {
     setLoading(true);
     setError(null);
-    const res = await api.dashboard();
+    const endpointByRole: Record<AdminRole, () => Promise<any>> = {
+      super_admin: api.dashboard,
+      finance: api.dashboardFinance,
+      compliance: api.dashboardCompliance,
+      customer_service: api.dashboardSupport,
+    };
+    const res = await endpointByRole[role]();
     setLoading(false);
     if (!res?.success) {
       setError(res?.message || t('analytics.failedToLoad'));
@@ -37,9 +46,10 @@ export default function Analytics() {
     setData(res.data);
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     load();
-  }, []);
+  }, [role]);
 
   const byType = useMemo(() => (data?.by_type || []).map((tx: any) => ({ name: tx.type, value: Number(tx.count) || 0 })), [data]);
   const topCountries = useMemo(() => (data?.top_countries || []).map((c: any) => ({ country: c.country, users: Number(c.count) || 0 })), [data]);

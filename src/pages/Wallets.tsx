@@ -24,7 +24,7 @@ const Wallets: React.FC = () => {
         <Card label={t('wallets.totalWallets')} value={data?.total || 0} color="#1B3A5C" icon={<Wallet size={20} />} />
         <Card label={t('wallets.fiatWallets')} value={data?.fiat || 0} color="#43A047" icon={<CreditCard size={20} />} />
         <Card label={t('wallets.cryptoWallets')} value={data?.crypto || 0} color="#FF9800" icon={<TrendingUp size={20} />} />
-        <Card label={t('wallets.totalBalance')} value={`${(data?.total_balance || 0).toLocaleString()} CDF`} color="#00B4D8" icon={<Wallet size={20} />} />
+        <Card label={t('wallets.totalBalance')} value={`${(data?.total_balance || 0).toLocaleString()} XAF`} color="#00B4D8" icon={<Wallet size={20} />} />
       </div>
 
       <div style={{ background: '#fff', borderRadius: 12, padding: 20, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>

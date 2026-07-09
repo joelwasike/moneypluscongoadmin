@@ -14,6 +14,7 @@ export interface User {
   role?: 'user' | 'agent';
   isActive?: boolean;
   kycVerified?: boolean;
+  avatar_url?: string;
 }
 
 export interface Transaction {

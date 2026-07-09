@@ -6,6 +6,7 @@ import { adminNotifications } from '../data/mockData';
 import { useAuth } from '../App';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Language } from '../i18n/translations';
+import { ADMIN_ROLE_LABELS } from '../auth/adminAccess';
 
 const COLORS = {
   background: '#F5F7FA',
@@ -21,7 +22,7 @@ const styles: Record<string, React.CSSProperties> = {
   wrapper: {
     display: 'flex',
     minHeight: '100vh',
-    fontFamily: 'Inter, sans-serif',
+    fontFamily: 'Poppins, sans-serif',
   },
   main: {
     marginLeft: SIDEBAR_WIDTH,
@@ -62,7 +63,7 @@ const styles: Record<string, React.CSSProperties> = {
     border: '1px solid #E2E8F0',
     borderRadius: 8,
     fontSize: 14,
-    fontFamily: 'Inter, sans-serif',
+    fontFamily: 'Poppins, sans-serif',
     color: COLORS.textPrimary,
     backgroundColor: '#F8FAFC',
     outline: 'none',
@@ -127,7 +128,7 @@ const LANGUAGES: { code: Language; flag: string; label: string }[] = [
 
 const Layout: React.FC = () => {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, role } = useAuth();
   const { lang, setLang, t } = useLanguage();
   const [searchValue, setSearchValue] = useState('');
   const [showNotifications, setShowNotifications] = useState(false);
@@ -140,6 +141,7 @@ const Layout: React.FC = () => {
 
   const unreadCount = notifications.filter(n => !n.read).length;
   const currentLang = LANGUAGES.find(l => l.code === lang) || LANGUAGES[0];
+  const currentRole = ADMIN_ROLE_LABELS[role];
 
   const markAsRead = (id: string) => {
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
@@ -221,7 +223,7 @@ const Layout: React.FC = () => {
                         display: 'flex', alignItems: 'center', gap: 10,
                         padding: '10px 16px', width: '100%', background: 'none',
                         border: 'none', cursor: 'pointer', fontSize: 14,
-                        fontFamily: 'Inter, sans-serif', fontWeight: lang === l.code ? 700 : 400,
+                        fontFamily: 'Poppins, sans-serif', fontWeight: lang === l.code ? 700 : 400,
                         color: lang === l.code ? COLORS.primary : '#374151',
                         backgroundColor: lang === l.code ? '#F0F4F8' : 'transparent',
                         transition: 'background 0.15s',
@@ -331,13 +333,13 @@ const Layout: React.FC = () => {
                 }}>
                   <div style={{ padding: '14px 16px', borderBottom: '1px solid #F3F4F6' }}>
                     <div style={{ fontWeight: 600, color: COLORS.primary, fontSize: 14 }}>Joel Wasike</div>
-                    <div style={{ fontSize: 12, color: '#9CA3AF', marginTop: 2 }}>{t('common.superAdmin')}</div>
+                  <div style={{ fontSize: 12, color: '#9CA3AF', marginTop: 2 }}>{currentRole}</div>
                   </div>
                   <div>
                     <button onClick={() => { navigate('/profile'); setShowProfile(false); }} style={{
                       display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px',
                       color: COLORS.textPrimary, fontSize: 13, fontWeight: 500, width: '100%',
-                      background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'Inter, sans-serif',
+                      background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'Poppins, sans-serif',
                       transition: 'background 0.15s',
                     }}
                       onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#F9FAFB')}
@@ -348,7 +350,7 @@ const Layout: React.FC = () => {
                     <button onClick={() => { navigate('/settings'); setShowProfile(false); }} style={{
                       display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px',
                       color: COLORS.textPrimary, fontSize: 13, fontWeight: 500, width: '100%',
-                      background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'Inter, sans-serif',
+                      background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'Poppins, sans-serif',
                       transition: 'background 0.15s',
                     }}
                       onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#F9FAFB')}
@@ -360,7 +362,7 @@ const Layout: React.FC = () => {
                       <button style={{
                         display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px',
                         color: '#C62828', fontSize: 13, fontWeight: 500, background: 'none',
-                        border: 'none', cursor: 'pointer', width: '100%', fontFamily: 'Inter, sans-serif',
+                        border: 'none', cursor: 'pointer', width: '100%', fontFamily: 'Poppins, sans-serif',
                         transition: 'background 0.15s',
                       }}
                         onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#FFF5F5')}

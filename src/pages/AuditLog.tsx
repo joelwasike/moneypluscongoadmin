@@ -4,7 +4,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 
 const NAVY = '#1B3A5C';
 const GREEN = '#43A047';
-const FONT = "'Inter', sans-serif";
+const FONT = "'Poppins', sans-serif";
 
 interface AuditEntry {
   id: string;

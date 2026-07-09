@@ -1,30 +1,24 @@
 import React, { useState } from 'react';
+import { useEffect } from 'react';
 import { UserCog, Shield, Eye, ToggleLeft, ToggleRight, Plus, Search, X, ArrowLeft, Mail, Calendar, Clock } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { ADMIN_ROLE_LABELS, ADMIN_ROLE_OPTIONS, AdminRole, canAccessRole } from '../auth/adminAccess';
+import api from '../services/api';
 
 const NAVY = '#1B3A5C';
 const GREEN = '#43A047';
-const FONT = "'Inter', sans-serif";
+const FONT = "'Poppins', sans-serif";
 
 interface Admin {
   id: string;
   name: string;
   email: string;
-  role: 'super_admin' | 'admin' | 'support' | 'viewer';
+  role: AdminRole;
   status: 'active' | 'disabled';
   twoFactor: boolean;
   lastLogin: string;
   createdAt: string;
 }
-
-const initialAdmins: Admin[] = [
-  { id: 'ADM001', name: 'Joel Wasike', email: 'joel@moneyplus.cd', role: 'super_admin', status: 'active', twoFactor: true, lastLogin: '2026-04-11 08:30', createdAt: '2025-06-01' },
-  { id: 'ADM002', name: 'Sarah Mutombo', email: 'sarah@moneyplus.cd', role: 'admin', status: 'active', twoFactor: true, lastLogin: '2026-04-10 17:45', createdAt: '2025-08-15' },
-  { id: 'ADM003', name: 'Pierre Lubamba', email: 'pierre@moneyplus.cd', role: 'admin', status: 'active', twoFactor: true, lastLogin: '2026-04-10 14:20', createdAt: '2025-09-10' },
-  { id: 'ADM004', name: 'Amani Kazadi', email: 'amani@moneyplus.cd', role: 'support', status: 'active', twoFactor: false, lastLogin: '2026-04-09 11:00', createdAt: '2026-01-20' },
-  { id: 'ADM005', name: 'Fiston Kalala', email: 'fiston@moneyplus.cd', role: 'support', status: 'disabled', twoFactor: false, lastLogin: '2026-03-01 09:15', createdAt: '2025-11-05' },
-  { id: 'ADM006', name: 'Gracia Ilunga', email: 'gracia@moneyplus.cd', role: 'viewer', status: 'active', twoFactor: false, lastLogin: '2026-04-11 07:00', createdAt: '2026-02-28' },
-];
 
 const statusBadge: Record<Admin['status'], { bg: string; color: string }> = {
   active: { bg: '#E8F5E9', color: '#2E7D32' },
@@ -36,10 +30,10 @@ const AdminDetail: React.FC<{ admin: Admin; onBack: () => void; onToggleStatus: 
   const { t } = useLanguage();
 
   const roleBadge: Record<Admin['role'], { bg: string; color: string; label: string }> = {
-    super_admin: { bg: '#EDE7F6', color: '#5E35B1', label: t('adminAccounts.roles.super_admin') },
-    admin: { bg: '#E3F2FD', color: '#1565C0', label: t('adminAccounts.roles.admin') },
-    support: { bg: '#FFF3E0', color: '#E65100', label: t('adminAccounts.roles.support') },
-    viewer: { bg: '#ECEFF1', color: '#546E7A', label: t('adminAccounts.roles.viewer') },
+    super_admin: { bg: '#EDE7F6', color: '#5E35B1', label: ADMIN_ROLE_LABELS.super_admin },
+    finance: { bg: '#E3F2FD', color: '#1565C0', label: ADMIN_ROLE_LABELS.finance },
+    customer_service: { bg: '#FFF3E0', color: '#E65100', label: ADMIN_ROLE_LABELS.customer_service },
+    compliance: { bg: '#E8F5E9', color: '#2E7D32', label: ADMIN_ROLE_LABELS.compliance },
   };
 
   return (
@@ -127,13 +121,13 @@ const AdminDetail: React.FC<{ admin: Admin; onBack: () => void; onToggleStatus: 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
           {[
             { perm: 'View Dashboard', has: true },
-            { perm: 'Manage Users', has: admin.role === 'super_admin' || admin.role === 'admin' },
-            { perm: 'Manage Transactions', has: admin.role === 'super_admin' || admin.role === 'admin' },
-            { perm: 'Approve KYC', has: admin.role === 'super_admin' || admin.role === 'admin' },
-            { perm: 'Manage Settings', has: admin.role === 'super_admin' },
-            { perm: 'Manage Admins', has: admin.role === 'super_admin' },
-            { perm: 'View Audit Log', has: admin.role !== 'viewer' },
-            { perm: 'Manage Exchange Rates', has: admin.role === 'super_admin' || admin.role === 'admin' },
+            { perm: 'Manage Users', has: canAccessRole(admin.role, 'delete_user') },
+            { perm: 'Manage Transactions', has: canAccessRole(admin.role, 'view_transactions') },
+            { perm: 'Approve KYC', has: canAccessRole(admin.role, 'review_kyc') },
+            { perm: 'Manage Settings', has: canAccessRole(admin.role, 'manage_settings') },
+            { perm: 'Manage Admins', has: canAccessRole(admin.role, 'manage_admins') },
+            { perm: 'View Audit Log', has: canAccessRole(admin.role, 'view_audit_log') },
+            { perm: 'Manage Exchange Rates', has: canAccessRole(admin.role, 'view_exchange_rates') },
           ].map(p => (
             <div key={p.perm} style={{
               display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px',
@@ -155,20 +149,46 @@ const AdminDetail: React.FC<{ admin: Admin; onBack: () => void; onToggleStatus: 
 // ─── Add Admin Modal ───
 const AddAdminModal: React.FC<{ onClose: () => void; onAdd: (admin: Admin) => void; nextId: string }> = ({ onClose, onAdd, nextId }) => {
   const { t } = useLanguage();
-  const [form, setForm] = useState({ name: '', email: '', role: 'admin' as Admin['role'] });
+  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'finance' as Admin['role'] });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = () => {
-    if (!form.name.trim() || !form.email.trim()) return;
-    onAdd({
-      id: nextId,
-      name: form.name,
-      email: form.email,
-      role: form.role,
-      status: 'active',
-      twoFactor: false,
-      lastLogin: 'Never',
-      createdAt: new Date().toISOString().slice(0, 10),
-    });
+  const handleSubmit = async () => {
+    if (!form.name.trim() || !form.email.trim() || !form.password.trim()) {
+      setError(t('adminAccounts.errors.fillAllFields'));
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      const res = await api.createAdmin({
+        name: form.name.trim(),
+        email: form.email.trim(),
+        password: form.password,
+        role: form.role,
+      });
+
+      if (!res?.success) {
+        setError(res?.message || t('adminAccounts.errors.failedToCreate'));
+        return;
+      }
+
+      const created = res.data?.admin || res.data || {};
+      onAdd({
+        id: String(created.id ?? nextId),
+        name: created.name ?? form.name.trim(),
+        email: created.email ?? form.email.trim(),
+        role: (created.role ?? form.role) as Admin['role'],
+        status: created.is_active === false ? 'disabled' : 'active',
+        twoFactor: Boolean(created.two_fa_enabled ?? created.twoFactor ?? false),
+        lastLogin: created.last_login_at ? String(created.last_login_at).slice(0, 16) : 'Never',
+        createdAt: created.created_at ? String(created.created_at).slice(0, 10) : new Date().toISOString().slice(0, 10),
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const inputStyle: React.CSSProperties = {
@@ -205,12 +225,24 @@ const AddAdminModal: React.FC<{ onClose: () => void; onAdd: (admin: Admin) => vo
               onChange={e => setForm({ ...form, email: e.target.value })} />
           </div>
           <div>
+            <label style={{ fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6, display: 'block' }}>
+              {t('adminAccounts.detail.password')}
+            </label>
+            <input
+              style={inputStyle}
+              type="password"
+              placeholder="••••••••"
+              value={form.password}
+              onChange={e => setForm({ ...form, password: e.target.value })}
+            />
+          </div>
+          <div>
             <label style={{ fontSize: 13, fontWeight: 600, color: '#374151', marginBottom: 6, display: 'block' }}>{t('adminAccounts.detail.role')}</label>
             <select style={{ ...inputStyle, backgroundColor: '#fff', cursor: 'pointer' }} value={form.role}
               onChange={e => setForm({ ...form, role: e.target.value as Admin['role'] })}>
-              <option value="admin">{t('adminAccounts.roles.admin')}</option>
-              <option value="support">{t('adminAccounts.roles.support')}</option>
-              <option value="viewer">{t('adminAccounts.roles.viewer')}</option>
+              {ADMIN_ROLE_OPTIONS.map((role) => (
+                <option key={role} value={role}>{ADMIN_ROLE_LABELS[role]}</option>
+              ))}
             </select>
           </div>
         </div>
@@ -225,11 +257,18 @@ const AddAdminModal: React.FC<{ onClose: () => void; onAdd: (admin: Admin) => vo
             padding: '10px 20px', borderRadius: 8, border: 'none',
             backgroundColor: NAVY, color: '#fff', fontSize: 14, fontWeight: 600,
             cursor: 'pointer', fontFamily: FONT,
-            opacity: form.name.trim() && form.email.trim() ? 1 : 0.5,
+            opacity: form.name.trim() && form.email.trim() && form.password.trim() ? 1 : 0.5,
           }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Plus size={16} /> {t('adminAccounts.addAdmin')}</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Plus size={16} /> {loading ? t('common.loading') : t('adminAccounts.addAdmin')}
+            </span>
           </button>
         </div>
+        {error && (
+          <div style={{ marginTop: 16, color: '#C62828', fontSize: 13, fontWeight: 600 }}>
+            {error}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -237,17 +276,19 @@ const AddAdminModal: React.FC<{ onClose: () => void; onAdd: (admin: Admin) => vo
 
 export default function AdminAccounts() {
   const { t } = useLanguage();
-  const [adminList, setAdminList] = useState<Admin[]>(initialAdmins);
+  const [adminList, setAdminList] = useState<Admin[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<'all' | Admin['role']>('all');
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedAdmin, setSelectedAdmin] = useState<Admin | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const roleBadge: Record<Admin['role'], { bg: string; color: string; label: string }> = {
-    super_admin: { bg: '#EDE7F6', color: '#5E35B1', label: t('adminAccounts.roles.super_admin') },
-    admin: { bg: '#E3F2FD', color: '#1565C0', label: t('adminAccounts.roles.admin') },
-    support: { bg: '#FFF3E0', color: '#E65100', label: t('adminAccounts.roles.support') },
-    viewer: { bg: '#ECEFF1', color: '#546E7A', label: t('adminAccounts.roles.viewer') },
+    super_admin: { bg: '#EDE7F6', color: '#5E35B1', label: ADMIN_ROLE_LABELS.super_admin },
+    finance: { bg: '#E3F2FD', color: '#1565C0', label: ADMIN_ROLE_LABELS.finance },
+    customer_service: { bg: '#FFF3E0', color: '#E65100', label: ADMIN_ROLE_LABELS.customer_service },
+    compliance: { bg: '#E8F5E9', color: '#2E7D32', label: ADMIN_ROLE_LABELS.compliance },
   };
 
   const filtered = adminList.filter(a => {
@@ -258,8 +299,49 @@ export default function AdminAccounts() {
     return matchSearch && matchRole;
   });
 
-  const handleToggleStatus = (id: string) => {
-    setAdminList(prev => prev.map(a =>
+  useEffect(() => {
+    let canceled = false;
+    (async () => {
+      setLoading(true);
+      setError('');
+      const res = await api.listAdmins();
+      if (canceled) return;
+      setLoading(false);
+      if (!res?.success) {
+        setError(res?.message || 'Failed to load admins');
+        return;
+      }
+      const rows = (res.data?.admins || res.data || []) as any[];
+      const mapped: Admin[] = Array.isArray(rows)
+        ? rows.map((admin: any) => ({
+            id: String(admin.id),
+            name: admin.name || '-',
+            email: admin.email || '-',
+            role: admin.role || 'finance',
+            status: admin.is_active === false ? 'disabled' : 'active',
+            twoFactor: Boolean(admin.two_fa_enabled),
+            lastLogin: admin.last_login_at ? String(admin.last_login_at).slice(0, 16) : 'Never',
+            createdAt: admin.created_at ? String(admin.created_at).slice(0, 10) : '-',
+          }))
+        : [];
+      setAdminList(mapped);
+    })();
+    return () => {
+      canceled = true;
+    };
+  }, []);
+
+  const handleToggleStatus = async (id: string) => {
+    const target = adminList.find((a) => a.id === id);
+    if (!target) return;
+
+    const res = await api.toggleAdmin(Number(id.replace(/\D/g, '')));
+    if (!res?.success) {
+      setError(res?.message || 'Failed to update admin status');
+      return;
+    }
+
+    setAdminList((prev) => prev.map(a =>
       a.id === id ? { ...a, status: a.status === 'active' ? 'disabled' as const : 'active' as const } : a
     ));
     if (selectedAdmin && selectedAdmin.id === id) {
@@ -271,8 +353,6 @@ export default function AdminAccounts() {
     setAdminList(prev => [admin, ...prev]);
     setShowAddModal(false);
   };
-
-  const nextId = `ADM${String(adminList.length + 1).padStart(3, '0')}`;
 
   if (selectedAdmin) {
     const liveAdmin = adminList.find(a => a.id === selectedAdmin.id) || selectedAdmin;
@@ -301,6 +381,9 @@ export default function AdminAccounts() {
           <Plus size={16} /> {t('adminAccounts.addAdmin')}
         </button>
       </div>
+      {error && (
+        <div style={{ marginBottom: 16, color: '#C62828', fontWeight: 600 }}>{error}</div>
+      )}
 
       {/* Stat Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20, marginBottom: 28 }}>
@@ -348,10 +431,9 @@ export default function AdminAccounts() {
           }}
         >
           <option value="all">All Roles</option>
-          <option value="super_admin">{t('adminAccounts.roles.super_admin')}</option>
-          <option value="admin">{t('adminAccounts.roles.admin')}</option>
-          <option value="support">{t('adminAccounts.roles.support')}</option>
-          <option value="viewer">{t('adminAccounts.roles.viewer')}</option>
+          {ADMIN_ROLE_OPTIONS.map((role) => (
+            <option key={role} value={role}>{ADMIN_ROLE_LABELS[role]}</option>
+          ))}
         </select>
       </div>
 
@@ -431,10 +513,10 @@ export default function AdminAccounts() {
                   </td>
                 </tr>
               ))}
-              {filtered.length === 0 && (
+              {filtered.length === 0 && !loading && (
                 <tr>
                   <td colSpan={7} style={{ padding: 40, textAlign: 'center', color: '#9CA3AF' }}>
-                    No admins found matching your filters.
+                    {t('adminAccounts.noAdmins')}
                   </td>
                 </tr>
               )}
@@ -443,7 +525,7 @@ export default function AdminAccounts() {
         </div>
       </div>
 
-      {showAddModal && <AddAdminModal onClose={() => setShowAddModal(false)} onAdd={handleAddAdmin} nextId={nextId} />}
+      {showAddModal && <AddAdminModal onClose={() => setShowAddModal(false)} onAdd={handleAddAdmin} nextId={`ADM${String(adminList.length + 1).padStart(3, '0')}`} />}
     </div>
   );
 }
