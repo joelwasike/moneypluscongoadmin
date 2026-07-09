@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Users, Activity, DollarSign, TrendingUp } from 'lucide-react';
+import { Users, Activity, DollarSign, TrendingUp, BarChart3 } from 'lucide-react';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import api from '../services/api';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -146,14 +146,15 @@ export default function Dashboard() {
           <button onClick={load} style={{ padding: '10px 16px', borderRadius: 10, border: '1px solid #E5E7EB', background: '#fff', cursor: 'pointer', fontWeight: 700, color: NAVY }}>{t('common.refresh')}</button>
         </div>
         {(loading || error) && <div style={{ marginBottom: 16, color: error ? '#C62828' : '#6B7280', fontWeight: 700 }}>{error ? error : t('common.loading')}</div>}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 24, marginBottom: 28 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 24, marginBottom: 28 }}>
+          <StatCard title="Transaction Volume" value={`${formatCurrency(Number(data?.total_volume || 0))} XAF`} icon={<BarChart3 size={24} color={NAVY} />} />
           <StatCard title="Total Revenue" value={`${formatCurrency(Number(data?.total_revenue || 0))} XAF`} icon={<DollarSign size={24} color={NAVY} />} />
           <StatCard title="Today Revenue" value={`${formatCurrency(Number(data?.today_revenue || 0))} XAF`} icon={<TrendingUp size={24} color={NAVY} />} />
           <StatCard title="Net Profit" value={`${formatCurrency(Number(data?.net_profit || 0))} XAF`} icon={<Activity size={24} color={NAVY} />} />
           <StatCard title="Transactions" value={String(data?.total_transactions ?? '—')} icon={<Users size={24} color={NAVY} />} />
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 28 }}>
-          <Card title="Daily Revenue">
+          <Card title="Daily Revenue & Volume">
             <ResponsiveContainer width="100%" height={280}>
               <AreaChart data={financeDaily}>
                 <defs>
@@ -161,12 +162,18 @@ export default function Dashboard() {
                     <stop offset="5%" stopColor={GREEN} stopOpacity={0.3} />
                     <stop offset="95%" stopColor={GREEN} stopOpacity={0.02} />
                   </linearGradient>
+                  <linearGradient id="volumeGradientFinance" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={NAVY} stopOpacity={0.25} />
+                    <stop offset="95%" stopColor={NAVY} stopOpacity={0.02} />
+                  </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#E0E6ED" />
                 <XAxis dataKey="date" tick={{ fontSize: 12, fill: '#7C8D9E', fontFamily: FONT }} />
-                <YAxis tick={{ fontSize: 12, fill: '#7C8D9E', fontFamily: FONT }} tickFormatter={(v) => `${(Number(v) / 1000).toFixed(0)}k`} />
+                <YAxis yAxisId="left" tick={{ fontSize: 12, fill: '#7C8D9E', fontFamily: FONT }} tickFormatter={(v) => `${(Number(v) / 1000).toFixed(0)}k`} />
+                <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12, fill: '#7C8D9E', fontFamily: FONT }} tickFormatter={(v) => `${(Number(v) / 1000).toFixed(0)}k`} />
                 <Tooltip />
-                <Area type="monotone" dataKey="fees" stroke={GREEN} fill="url(#financeGradient)" strokeWidth={2} />
+                <Area yAxisId="right" type="monotone" dataKey="volume" name="Volume" stroke={NAVY} fill="url(#volumeGradientFinance)" strokeWidth={2} />
+                <Area yAxisId="left" type="monotone" dataKey="fees" name="Fees" stroke={GREEN} fill="url(#financeGradient)" strokeWidth={2} />
               </AreaChart>
             </ResponsiveContainer>
           </Card>
