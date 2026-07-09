@@ -128,6 +128,7 @@ const AdminDetail: React.FC<{ admin: Admin; onBack: () => void; onToggleStatus: 
             { perm: 'Manage Admins', has: canAccessRole(admin.role, 'manage_admins') },
             { perm: 'View Audit Log', has: canAccessRole(admin.role, 'view_audit_log') },
             { perm: 'Manage Exchange Rates', has: canAccessRole(admin.role, 'view_exchange_rates') },
+            { perm: 'View Wallet Balances', has: canAccessRole(admin.role, 'view_wallets') },
           ].map(p => (
             <div key={p.perm} style={{
               display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px',

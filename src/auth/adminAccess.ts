@@ -12,6 +12,9 @@ export type AdminPermission =
   | 'view_compliance'
   | 'review_kyc'
   | 'view_wallets'
+  | 'view_cards'
+  | 'view_splits'
+  | 'view_corridors'
   | 'view_exchange_rates'
   | 'manage_fees'
   | 'view_countries'
@@ -56,6 +59,9 @@ export const ROLE_PERMISSIONS: Record<AdminRole, AdminPermission[]> = {
     'view_compliance',
     'review_kyc',
     'view_wallets',
+    'view_cards',
+    'view_splits',
+    'view_corridors',
     'view_exchange_rates',
     'manage_fees',
     'view_countries',
@@ -74,6 +80,9 @@ export const ROLE_PERMISSIONS: Record<AdminRole, AdminPermission[]> = {
     'view_agencies',
     'view_transactions',
     'view_wallets',
+    'view_cards',
+    'view_splits',
+    'view_corridors',
     'view_exchange_rates',
     'manage_fees',
     'view_countries',
@@ -113,6 +122,9 @@ export const ROLE_PAGE_ACCESS: Record<string, AdminRole[]> = {
   '/compliance': ['super_admin', 'compliance'],
   '/kyc': ['super_admin', 'customer_service', 'compliance'],
   '/wallets': ['super_admin', 'finance'],
+  '/cards': ['super_admin', 'finance'],
+  '/splits': ['super_admin', 'finance'],
+  '/corridors': ['super_admin', 'finance'],
   '/chat-support': ['super_admin', 'customer_service'],
   '/help-articles': ['super_admin', 'customer_service'],
   '/exchange-rates': ['super_admin', 'finance'],

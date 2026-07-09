@@ -17,6 +17,9 @@ import AuditLog from './pages/AuditLog';
 import Profile from './pages/Profile';
 import Agents from './pages/Agents';
 import Wallets from './pages/Wallets';
+import CardsAdmin from './pages/CardsAdmin';
+import SplitsAdmin from './pages/SplitsAdmin';
+import Corridors from './pages/Corridors';
 import ChatSupport from './pages/ChatSupport';
 import HelpArticles from './pages/HelpArticles';
 import Login from './pages/Login';
@@ -117,6 +120,9 @@ function App() {
               <Route path="compliance" element={<RoleGuard path="/compliance"><Compliance /></RoleGuard>} />
               <Route path="kyc" element={<RoleGuard path="/kyc"><KycReview /></RoleGuard>} />
               <Route path="wallets" element={<RoleGuard path="/wallets"><Wallets /></RoleGuard>} />
+              <Route path="cards" element={<RoleGuard path="/cards"><CardsAdmin /></RoleGuard>} />
+              <Route path="splits" element={<RoleGuard path="/splits"><SplitsAdmin /></RoleGuard>} />
+              <Route path="corridors" element={<RoleGuard path="/corridors"><Corridors /></RoleGuard>} />
               <Route path="chat-support" element={<RoleGuard path="/chat-support"><ChatSupport /></RoleGuard>} />
               <Route path="help-articles" element={<RoleGuard path="/help-articles"><HelpArticles /></RoleGuard>} />
               <Route path="exchange-rates" element={<RoleGuard path="/exchange-rates"><ExchangeRates /></RoleGuard>} />

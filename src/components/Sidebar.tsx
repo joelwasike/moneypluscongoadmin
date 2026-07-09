@@ -19,6 +19,9 @@ import {
   BookOpen,
   Store,
   AlertTriangle,
+  CreditCard,
+  Split,
+  Route as RouteIcon,
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../App';
@@ -113,11 +116,14 @@ const Sidebar: React.FC = () => {
         { label: t('sidebar.compliance'), path: '/compliance', icon: <AlertTriangle size={ICON_SIZE} /> },
         { label: t('sidebar.kycReview'), path: '/kyc', icon: <ShieldCheck size={ICON_SIZE} /> },
         { label: t('sidebar.wallets'), path: '/wallets', icon: <Wallet size={ICON_SIZE} /> },
+        { label: t('sidebar.cards'), path: '/cards', icon: <CreditCard size={ICON_SIZE} /> },
+        { label: t('sidebar.splitPayments'), path: '/splits', icon: <Split size={ICON_SIZE} /> },
       ],
     },
     {
       title: t('sidebar.configuration'),
       items: [
+        { label: t('sidebar.corridors'), path: '/corridors', icon: <RouteIcon size={ICON_SIZE} /> },
         { label: t('sidebar.exchangeRates'), path: '/exchange-rates', icon: <DollarSign size={ICON_SIZE} /> },
         { label: t('sidebar.feesCharges'), path: '/fees', icon: <Receipt size={ICON_SIZE} /> },
         { label: t('sidebar.countries'), path: '/countries', icon: <Globe size={ICON_SIZE} /> },
