@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Search, ArrowUpDown, CheckCircle, Clock, XCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Search, ArrowUpDown, CheckCircle, Clock, XCircle, X, Users, ExternalLink, ReceiptText, Copy } from 'lucide-react';
 import api from '../services/api';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -18,6 +19,16 @@ type AdminTxn = {
   fee?: number;
   description?: string;
   created_at?: string;
+  sender_id?: number;
+  receiver_id?: number;
+  sender_wallet_id?: number;
+  receiver_wallet_id?: number;
+  sender_name?: string;
+  receiver_name?: string;
+  counterparty_name?: string;
+  display_type?: string;
+  display_title?: string;
+  external_ref?: string;
 };
 
 const statusBadgeColors: Record<string, { bg: string; color: string }> = {
@@ -29,6 +40,7 @@ const statusBadgeColors: Record<string, { bg: string; color: string }> = {
 
 const TransactionsPage: React.FC = () => {
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<'all' | string>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | string>('all');
@@ -36,6 +48,7 @@ const TransactionsPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [rows, setRows] = useState<AdminTxn[]>([]);
   const [stats, setStats] = useState({ total: 0, completed: 0, pending: 0, failed: 0 });
+  const [selectedTxn, setSelectedTxn] = useState<AdminTxn | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -86,6 +99,57 @@ const TransactionsPage: React.FC = () => {
     cursor: 'pointer',
     outline: 'none',
     minWidth: 150,
+  };
+
+  const humanizeTransaction = (txn: AdminTxn) => {
+    if (txn.display_title?.trim()) return txn.display_title;
+    const amount = `${Number(txn.amount || 0).toLocaleString()} ${txn.currency || ''}`.trim();
+    const sender = txn.sender_name?.trim();
+    const receiver = txn.receiver_name?.trim();
+    const counterparty = txn.counterparty_name?.trim();
+
+    switch ((txn.display_type || txn.type || '').toLowerCase()) {
+      case 'send':
+        if (sender && receiver) return `${sender} sent ${amount} to ${receiver}`;
+        if (counterparty) return `Sent ${amount} to ${counterparty}`;
+        return `Money sent: ${amount}`;
+      case 'receive':
+        if (sender && receiver) return `${receiver} received ${amount} from ${sender}`;
+        if (counterparty) return `Received ${amount} from ${counterparty}`;
+        return `Money received: ${amount}`;
+      case 'exchange':
+        return `Currency exchange of ${amount}`;
+      case 'topup':
+        return `Airtime top-up of ${amount}`;
+      case 'withdraw':
+      case 'withdrawal':
+        return `Wallet withdrawal of ${amount}`;
+      case 'bill_payment':
+        return `Bill payment of ${amount}`;
+      case 'crypto_buy':
+        return `Crypto purchase of ${amount}`;
+      case 'crypto_sell':
+        return `Crypto sale of ${amount}`;
+      case 'deposit':
+        return `Wallet deposit of ${amount}`;
+      default:
+        return txn.description?.trim() || txn.type || '-';
+    }
+  };
+
+  const openUser = (id?: number) => {
+    if (!id) return;
+    setSelectedTxn(null);
+    navigate(`/users/${id}`);
+  };
+
+  const copyReference = async (value?: string) => {
+    if (!value) return;
+    try {
+      await navigator.clipboard.writeText(value);
+    } catch {
+      // No-op: clipboard access can fail on insecure contexts or older browsers.
+    }
   };
 
   return (
@@ -244,9 +308,16 @@ const TransactionsPage: React.FC = () => {
                   style={{ borderBottom: '1px solid #F3F4F6' }}
                   onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#F9FAFB')}
                   onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                  onClick={() => setSelectedTxn(txn)}
+                  role="button"
                 >
                   <td style={{ padding: '14px 16px', color: NAVY, fontWeight: 600, whiteSpace: 'nowrap' }}>#{txn.id}</td>
-                  <td style={{ padding: '14px 16px', color: '#374151', whiteSpace: 'nowrap' }}>{txn.type || '-'}</td>
+                  <td style={{ padding: '14px 16px', color: '#374151', maxWidth: 280 }}>
+                    <div style={{ fontWeight: 700, color: '#1F2937' }}>{humanizeTransaction(txn)}</div>
+                    <div style={{ fontSize: 12, color: '#6B7280', marginTop: 4, whiteSpace: 'nowrap' }}>
+                      {txn.sender_name || txn.receiver_name || txn.counterparty_name || txn.type || '-'}
+                    </div>
+                  </td>
                   <td style={{ padding: '14px 16px', color: '#1F2937', fontWeight: 600, whiteSpace: 'nowrap' }}>
                     {(txn.amount || 0).toLocaleString()}
                   </td>
@@ -289,9 +360,167 @@ const TransactionsPage: React.FC = () => {
           </table>
         </div>
       </div>
+
+      {selectedTxn && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(15, 23, 42, 0.42)',
+            zIndex: 1200,
+            display: 'flex',
+            justifyContent: 'flex-end',
+          }}
+          onClick={() => setSelectedTxn(null)}
+        >
+          <div
+            style={{
+              width: 'min(520px, calc(100vw - 24px))',
+              height: '100%',
+              background: '#fff',
+              boxShadow: '-24px 0 80px rgba(15, 23, 42, 0.22)',
+              padding: 24,
+              overflowY: 'auto',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+              <div>
+                <div style={{ fontSize: 12, color: '#6B7280', fontWeight: 700, textTransform: 'uppercase' }}>Transaction details</div>
+                <h2 style={{ margin: '4px 0 0', color: NAVY, fontSize: 24, fontWeight: 800 }}>{selectedTxn.reference || `#${selectedTxn.id}`}</h2>
+              </div>
+              <button
+                onClick={() => setSelectedTxn(null)}
+                style={{ border: 'none', background: '#F3F4F6', borderRadius: 10, width: 40, height: 40, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div style={{ marginTop: 18, padding: 18, borderRadius: 16, background: '#F8FAFC', border: '1px solid #E5E7EB' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                <ReceiptText size={18} color={NAVY} />
+                <div style={{ fontSize: 16, fontWeight: 800, color: '#111827' }}>{humanizeTransaction(selectedTxn)}</div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <InfoPill label="Type" value={selectedTxn.display_type || selectedTxn.type || '-'} />
+                <InfoPill label="Status" value={selectedTxn.status || '-'} />
+                <InfoPill label="Amount" value={`${Number(selectedTxn.amount || 0).toLocaleString()} ${selectedTxn.currency || ''}`.trim()} />
+                <InfoPill label="Fee" value={`${Number(selectedTxn.fee || 0).toLocaleString()} ${selectedTxn.currency || ''}`.trim()} />
+                <InfoPill label="Sender wallet" value={selectedTxn.sender_wallet_id ? `#${selectedTxn.sender_wallet_id}` : '-'} />
+                <InfoPill label="Receiver wallet" value={selectedTxn.receiver_wallet_id ? `#${selectedTxn.receiver_wallet_id}` : '-'} />
+              </div>
+              <div style={{ marginTop: 12 }}>
+                <InfoActionPill
+                  label="Reference"
+                  value={selectedTxn.reference || '-'}
+                  actionLabel="Copy"
+                  actionIcon={<Copy size={14} />}
+                  onAction={() => copyReference(selectedTxn.reference)}
+                />
+              </div>
+              <div style={{ marginTop: 12 }}>
+                <InfoPill label="Description" value={selectedTxn.description || selectedTxn.display_title || humanizeTransaction(selectedTxn)} fullWidth />
+              </div>
+              <div style={{ marginTop: 12, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <InfoPill label="Source" value={selectedTxn.display_type || selectedTxn.type || '-'} />
+                <InfoPill label="External ref" value={selectedTxn.external_ref || '-'} />
+              </div>
+            </div>
+
+            <div style={{ marginTop: 18 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, color: NAVY, fontWeight: 800 }}>
+                <Users size={18} /> People
+              </div>
+              <div style={{ display: 'grid', gap: 12 }}>
+                <PersonCard label="Sender" name={selectedTxn.sender_name} id={selectedTxn.sender_id} onOpen={openUser} />
+                <PersonCard label="Receiver" name={selectedTxn.receiver_name} id={selectedTxn.receiver_id} onOpen={openUser} />
+                {selectedTxn.counterparty_name && (
+                  <PersonCard label="Counterparty" name={selectedTxn.counterparty_name} id={selectedTxn.sender_id || selectedTxn.receiver_id} onOpen={openUser} />
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-export default TransactionsPage;
+const InfoPill: React.FC<{ label: string; value: string; fullWidth?: boolean }> = ({ label, value, fullWidth }) => (
+  <div style={{ gridColumn: fullWidth ? '1 / -1' : undefined, padding: '12px 14px', borderRadius: 14, background: '#fff', border: '1px solid #E5E7EB' }}>
+    <div style={{ fontSize: 11, fontWeight: 800, color: '#6B7280', textTransform: 'uppercase', letterSpacing: 0.6 }}>{label}</div>
+    <div style={{ marginTop: 4, fontSize: 14, fontWeight: 700, color: '#111827' }}>{value}</div>
+  </div>
+);
 
+const InfoActionPill: React.FC<{
+  label: string;
+  value: string;
+  actionLabel: string;
+  actionIcon: React.ReactNode;
+  onAction: () => void;
+}> = ({ label, value, actionLabel, actionIcon, onAction }) => (
+  <div style={{ padding: '12px 14px', borderRadius: 14, background: '#fff', border: '1px solid #E5E7EB' }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+      <div style={{ minWidth: 0 }}>
+        <div style={{ fontSize: 11, fontWeight: 800, color: '#6B7280', textTransform: 'uppercase', letterSpacing: 0.6 }}>{label}</div>
+        <div style={{ marginTop: 4, fontSize: 14, fontWeight: 700, color: '#111827', wordBreak: 'break-word' }}>{value}</div>
+      </div>
+      <button
+        onClick={onAction}
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 6,
+          padding: '8px 10px',
+          borderRadius: 10,
+          border: '1px solid #E5E7EB',
+          background: '#F8FAFC',
+          color: NAVY,
+          cursor: 'pointer',
+          fontFamily: FONT,
+          fontWeight: 700,
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {actionIcon}
+        {actionLabel}
+      </button>
+    </div>
+  </div>
+);
+
+const PersonCard: React.FC<{
+  label: string;
+  name?: string;
+  id?: number;
+  onOpen: (id?: number) => void;
+}> = ({ label, name, id, onOpen }) => (
+  <button
+    onClick={() => onOpen(id)}
+    disabled={!id}
+    style={{
+      width: '100%',
+      textAlign: 'left',
+      padding: '14px 16px',
+      borderRadius: 14,
+      border: '1px solid #E5E7EB',
+      background: id ? '#fff' : '#F9FAFB',
+      cursor: id ? 'pointer' : 'default',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: 12,
+      fontFamily: FONT,
+    }}
+  >
+    <div>
+      <div style={{ fontSize: 11, fontWeight: 800, color: '#6B7280', textTransform: 'uppercase', letterSpacing: 0.6 }}>{label}</div>
+      <div style={{ marginTop: 4, fontSize: 14, fontWeight: 700, color: '#111827' }}>{name || 'Unknown'}</div>
+    </div>
+    {id ? <ExternalLink size={16} color={NAVY} /> : null}
+  </button>
+);
+
+export default TransactionsPage;

@@ -114,6 +114,7 @@ function App() {
               <Route path="dashboard/support" element={<RoleGuard path="/dashboard/support"><Dashboard /></RoleGuard>} />
               <Route path="analytics" element={<RoleGuard path="/analytics"><Analytics /></RoleGuard>} />
               <Route path="users" element={<RoleGuard path="/users"><Users /></RoleGuard>} />
+              <Route path="users/:id" element={<RoleGuard path="/users"><Users /></RoleGuard>} />
               <Route path="agents" element={<RoleGuard path="/agents"><Agents /></RoleGuard>} />
               <Route path="agencies" element={<RoleGuard path="/agencies"><Agencies /></RoleGuard>} />
               <Route path="transactions" element={<RoleGuard path="/transactions"><Transactions /></RoleGuard>} />

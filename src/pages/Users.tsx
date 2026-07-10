@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
   Search,
   Users as UsersIcon,
@@ -607,6 +608,8 @@ const UserDetail: React.FC<{ user: User; onBack: () => void; onUserUpdated: (u: 
 // ─── Users List ───
 const UsersPage: React.FC = () => {
   const { t } = useLanguage();
+  const navigate = useNavigate();
+  const { id: userIdParam } = useParams();
   const { role: adminRole } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | User['status']>('all');
@@ -648,6 +651,31 @@ const UsersPage: React.FC = () => {
       canceled = true;
     };
   }, []);
+
+  useEffect(() => {
+    let canceled = false;
+    const loadUserById = async () => {
+      if (!userIdParam) {
+        setSelectedUser(null);
+        return;
+      }
+      const numericId = Number(userIdParam);
+      if (!Number.isFinite(numericId)) return;
+      const found = userList.find((u) => String(u.id) === userIdParam);
+      if (found) {
+        setSelectedUser(found);
+      }
+      const res = await api.getUser(numericId);
+      if (canceled) return;
+      if (!res?.success) return;
+      const raw = res.data?.user || res.data || {};
+      setSelectedUser(mapUser(raw));
+    };
+    loadUserById();
+    return () => {
+      canceled = true;
+    };
+  }, [userIdParam, userList]);
 
   const filteredUsers = userList.filter((user) => {
     const matchesSearch =
@@ -731,7 +759,7 @@ const UsersPage: React.FC = () => {
     return (
       <UserDetail
         user={selectedUser}
-        onBack={() => setSelectedUser(null)}
+        onBack={() => navigate('/users')}
         onUserUpdated={(u) => {
           setSelectedUser(u);
           setUserList((prev) => prev.map((x) => (String(x.id) === String(u.id) ? u : x)));
@@ -921,7 +949,7 @@ const UsersPage: React.FC = () => {
               {filteredUsers.map((user) => (
                 <tr
                   key={user.id}
-                  onClick={() => setSelectedUser(user)}
+                  onClick={() => navigate(`/users/${user.id}`)}
                   style={{
                     borderBottom: '1px solid #F3F4F6',
                     cursor: 'pointer',
@@ -983,7 +1011,7 @@ const UsersPage: React.FC = () => {
                       onClick={(e) => e.stopPropagation()}
                     >
                       <button
-                        onClick={() => setSelectedUser(user)}
+                        onClick={() => navigate(`/users/${user.id}`)}
                         style={{
                           display: 'inline-flex',
                           alignItems: 'center',
